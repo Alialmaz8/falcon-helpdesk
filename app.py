@@ -170,6 +170,58 @@ def ticket_details(ticket_id):
         "ticket_details.html",
         ticket=ticket,
     )
+@app.route("/tickets/<int:ticket_id>/edit", methods=["GET", "POST"])
+def edit_ticket(ticket_id):
+    with get_database_connection() as connection:
+        ticket = connection.execute(
+            "SELECT * FROM tickets WHERE id = ?",
+            (ticket_id,),
+        ).fetchone()
+
+        if ticket is None:
+            return "Ticket not found.", 404
+
+        if request.method == "POST":
+            requester = request.form["requester"].strip()
+            department = request.form["department"]
+            priority = request.form["priority"]
+            category = request.form["category"]
+            subject = request.form["subject"].strip()
+            description = request.form["description"].strip()
+            status = request.form["status"]
+
+            if status not in ALLOWED_STATUSES:
+                return "Invalid ticket status.", 400
+
+            connection.execute(
+                """
+                UPDATE tickets
+                SET requester = ?,
+                    department = ?,
+                    priority = ?,
+                    category = ?,
+                    subject = ?,
+                    description = ?,
+                    status = ?
+                WHERE id = ?
+                """,
+                (
+                    requester,
+                    department,
+                    priority,
+                    category,
+                    subject,
+                    description,
+                    status,
+                    ticket_id,
+                ),
+            )
+
+            return redirect(
+                url_for("ticket_details", ticket_id=ticket_id)
+            )
+
+    return render_template("edit_ticket.html", ticket=ticket)
 initialize_database()
 
 

@@ -634,3 +634,7 @@ td {
         grid-template-columns: 1fr;
     }
 }
+.details-actions {
+    display: flex;
+    gap: 10px;
+}
