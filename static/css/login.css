@@ -94,15 +94,3 @@ body {
     color: #b91c1c;
     font-size: 14px;
 }
-
-.demo-login {
-    margin-top: 22px;
-    padding: 14px;
-    border-radius: 9px;
-    background: #f8fafc;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    color: #475569;
-    font-size: 13px;
-}

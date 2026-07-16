@@ -1,5 +1,12 @@
 .venv/
 __pycache__/
 *.pyc
+
 .env
+.secret_key
+
 database/*.db
+
+.vscode/
+.DS_Store
+Thumbs.db

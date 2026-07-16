@@ -1,57 +1,54 @@
 import os
+import secrets
 import sqlite3
 from functools import wraps
 from pathlib import Path
 
-from flask import (
-    Flask,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
+from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
 app = Flask(__name__)
 
-app.secret_key = os.environ.get(
-    "FALCON_SECRET_KEY",
-    "falcon-helpdesk-local-key",
-)
-
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "database" / "falcon_helpdesk.db"
+SECRET_KEY_PATH = BASE_DIR / ".secret_key"
 
-ALLOWED_STATUSES = {
-    "Open",
-    "In Progress",
-    "Resolved",
-    "Closed",
-}
+TICKET_STATUSES = ("Open", "In Progress", "Resolved", "Closed")
+USER_ROLES = ("Administrator", "Technician", "User")
 
-ALLOWED_ROLES = {
-    "Administrator",
-    "Technician",
-    "User",
-}
-
-ASSET_TYPES = {
+ASSET_TYPES = (
     "Desktop",
     "Laptop",
     "Printer",
     "Network Device",
     "Mobile Device",
     "Other",
-}
+)
 
-ASSET_STATUSES = {
+ASSET_STATUSES = (
     "Available",
     "Assigned",
     "Repair",
     "Retired",
-}
+)
+
+
+def load_secret_key():
+    environment_key = os.environ.get("FALCON_SECRET_KEY")
+
+    if environment_key:
+        return environment_key
+
+    if SECRET_KEY_PATH.exists():
+        return SECRET_KEY_PATH.read_text(encoding="utf-8").strip()
+
+    new_key = secrets.token_hex(32)
+    SECRET_KEY_PATH.write_text(new_key, encoding="utf-8")
+    return new_key
+
+
+app.secret_key = load_secret_key()
 
 
 def get_database_connection():
@@ -108,24 +105,6 @@ def initialize_database():
             """
         )
 
-        connection.execute(
-            """
-            INSERT OR IGNORE INTO users (
-                full_name,
-                username,
-                password_hash,
-                role
-            )
-            VALUES (?, ?, ?, ?)
-            """,
-            (
-                "Ali Almazrouei",
-                "ali",
-                generate_password_hash("Falcon123!"),
-                "Administrator",
-            ),
-        )
-
 
 def login_required(view_function):
     @wraps(view_function)
@@ -168,18 +147,11 @@ def login():
 
         with get_database_connection() as connection:
             user = connection.execute(
-                """
-                SELECT *
-                FROM users
-                WHERE username = ?
-                """,
+                "SELECT * FROM users WHERE username = ?",
                 (username,),
             ).fetchone()
 
-        if user and check_password_hash(
-            user["password_hash"],
-            password,
-        ):
+        if user and check_password_hash(user["password_hash"], password):
             session.clear()
             session["user_id"] = user["id"]
             session["full_name"] = user["full_name"]
@@ -189,10 +161,7 @@ def login():
 
         error = "The username or password is incorrect."
 
-    return render_template(
-        "login.html",
-        error=error,
-    )
+    return render_template("login.html", error=error)
 
 
 @app.route("/logout")
@@ -298,12 +267,7 @@ def all_tickets():
     status = request.args.get("status", "").strip()
     priority = request.args.get("priority", "").strip()
 
-    sql = """
-        SELECT *
-        FROM tickets
-        WHERE 1 = 1
-    """
-
+    sql = "SELECT * FROM tickets WHERE 1 = 1"
     values = []
 
     if search:
@@ -347,11 +311,7 @@ def all_tickets():
 def ticket_details(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
-            """
-            SELECT *
-            FROM tickets
-            WHERE id = ?
-            """,
+            "SELECT * FROM tickets WHERE id = ?",
             (ticket_id,),
         ).fetchone()
 
@@ -372,11 +332,7 @@ def ticket_details(ticket_id):
 def edit_ticket(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
-            """
-            SELECT *
-            FROM tickets
-            WHERE id = ?
-            """,
+            "SELECT * FROM tickets WHERE id = ?",
             (ticket_id,),
         ).fetchone()
 
@@ -392,7 +348,7 @@ def edit_ticket(ticket_id):
             description = request.form["description"].strip()
             status = request.form["status"]
 
-            if status not in ALLOWED_STATUSES:
+            if status not in TICKET_STATUSES:
                 return "Invalid ticket status.", 400
 
             connection.execute(
@@ -440,7 +396,7 @@ def edit_ticket(ticket_id):
 def update_ticket_status(ticket_id):
     new_status = request.form.get("status", "").strip()
 
-    if new_status not in ALLOWED_STATUSES:
+    if new_status not in TICKET_STATUSES:
         return "Invalid ticket status.", 400
 
     with get_database_connection() as connection:
@@ -464,11 +420,7 @@ def update_ticket_status(ticket_id):
 def delete_ticket(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
-            """
-            SELECT id
-            FROM tickets
-            WHERE id = ?
-            """,
+            "SELECT id FROM tickets WHERE id = ?",
             (ticket_id,),
         ).fetchone()
 
@@ -476,10 +428,7 @@ def delete_ticket(ticket_id):
             return "Ticket not found.", 404
 
         connection.execute(
-            """
-            DELETE FROM tickets
-            WHERE id = ?
-            """,
+            "DELETE FROM tickets WHERE id = ?",
             (ticket_id,),
         )
 
@@ -551,12 +500,7 @@ def assets_page():
     asset_type_filter = request.args.get("type", "").strip()
     status_filter = request.args.get("status", "").strip()
 
-    sql = """
-        SELECT *
-        FROM assets
-        WHERE 1 = 1
-    """
-
+    sql = "SELECT * FROM assets WHERE 1 = 1"
     values = []
 
     if search:
@@ -605,11 +549,7 @@ def assets_page():
 def edit_asset(asset_id):
     with get_database_connection() as connection:
         asset = connection.execute(
-            """
-            SELECT *
-            FROM assets
-            WHERE id = ?
-            """,
+            "SELECT * FROM assets WHERE id = ?",
             (asset_id,),
         ).fetchone()
 
@@ -679,15 +619,15 @@ def edit_asset(asset_id):
     )
 
 
-@app.route("/assets/<int:asset_id>/delete", methods=["POST"])
+@app.route(
+    "/assets/<int:asset_id>/delete",
+    methods=["POST"],
+)
 @role_required("Administrator")
 def delete_asset(asset_id):
     with get_database_connection() as connection:
         connection.execute(
-            """
-            DELETE FROM assets
-            WHERE id = ?
-            """,
+            "DELETE FROM assets WHERE id = ?",
             (asset_id,),
         )
 
@@ -727,7 +667,6 @@ def reports_page():
                     CASE WHEN status = 'Closed'
                     THEN 1 ELSE 0 END
                 ) AS closed
-
             FROM tickets
             """
         ).fetchone()
@@ -773,7 +712,6 @@ def reports_page():
                     CASE WHEN status = 'Retired'
                     THEN 1 ELSE 0 END
                 ) AS retired
-
             FROM assets
             """
         ).fetchone()
@@ -839,7 +777,7 @@ def users_page():
         if not full_name or not username or not password:
             error = "Complete all user fields."
 
-        elif role not in ALLOWED_ROLES:
+        elif role not in USER_ROLES:
             error = "Select a valid role."
 
         elif len(password) < 8:
@@ -893,7 +831,10 @@ def users_page():
     )
 
 
-@app.route("/users/<int:user_id>/delete", methods=["POST"])
+@app.route(
+    "/users/<int:user_id>/delete",
+    methods=["POST"],
+)
 @role_required("Administrator")
 def delete_user(user_id):
     if user_id == session.get("user_id"):
@@ -906,10 +847,7 @@ def delete_user(user_id):
 
     with get_database_connection() as connection:
         connection.execute(
-            """
-            DELETE FROM users
-            WHERE id = ?
-            """,
+            "DELETE FROM users WHERE id = ?",
             (user_id,),
         )
 
