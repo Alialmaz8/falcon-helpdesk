@@ -15,8 +15,7 @@
         href="{{ url_for('static', filename='css/style.css') }}"
     >
 
-    {% block extra_css %}
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -91,8 +90,6 @@
                     Users
                 </a>
 
-                <a href="#">Settings</a>
-
             {% endif %}
 
             <a href="{{ url_for('logout') }}">
@@ -131,8 +128,7 @@
 
         </header>
 
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
 
     </main>
 

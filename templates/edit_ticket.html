@@ -1,80 +1,183 @@
 {% extends "base.html" %}
 
 {% block title %}
-Ticket #{{ ticket["id"] }} | Falcon HelpDesk
+Edit Ticket #{{ ticket["id"] }} | Falcon HelpDesk
 {% endblock %}
 
 {% block page_title %}
-Ticket #{{ ticket["id"] }}
+Edit Ticket #{{ ticket["id"] }}
 {% endblock %}
 
 {% block content %}
 
-<section class="content-panel">
+<section class="form-panel">
 
-    <div class="ticket-details-header">
-
+    <div class="panel-header">
         <div>
-            <h2>{{ ticket["subject"] }}</h2>
-            <p>Created on {{ ticket["created_at"] }}</p>
+            <h2>Update Ticket</h2>
+            <p>Make changes to this support request.</p>
+        </div>
+    </div>
+
+    <form method="POST" class="ticket-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="requester">Requester Name</label>
+                <input
+                    type="text"
+                    id="requester"
+                    name="requester"
+                    value="{{ ticket['requester'] }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department</label>
+
+                <select id="department" name="department" required>
+                    <option value="IT"
+                        {% if ticket["department"] == "IT" %}selected{% endif %}>
+                        Information Technology
+                    </option>
+
+                    <option value="HR"
+                        {% if ticket["department"] == "HR" %}selected{% endif %}>
+                        Human Resources
+                    </option>
+
+                    <option value="Finance"
+                        {% if ticket["department"] == "Finance" %}selected{% endif %}>
+                        Finance
+                    </option>
+
+                    <option value="Operations"
+                        {% if ticket["department"] == "Operations" %}selected{% endif %}>
+                        Operations
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority</label>
+
+                <select id="priority" name="priority" required>
+                    <option value="Low"
+                        {% if ticket["priority"] == "Low" %}selected{% endif %}>
+                        Low
+                    </option>
+
+                    <option value="Medium"
+                        {% if ticket["priority"] == "Medium" %}selected{% endif %}>
+                        Medium
+                    </option>
+
+                    <option value="High"
+                        {% if ticket["priority"] == "High" %}selected{% endif %}>
+                        High
+                    </option>
+
+                    <option value="Critical"
+                        {% if ticket["priority"] == "Critical" %}selected{% endif %}>
+                        Critical
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+
+                <select id="category" name="category" required>
+                    <option value="Hardware"
+                        {% if ticket["category"] == "Hardware" %}selected{% endif %}>
+                        Hardware
+                    </option>
+
+                    <option value="Software"
+                        {% if ticket["category"] == "Software" %}selected{% endif %}>
+                        Software
+                    </option>
+
+                    <option value="Network"
+                        {% if ticket["category"] == "Network" %}selected{% endif %}>
+                        Network
+                    </option>
+
+                    <option value="Account"
+                        {% if ticket["category"] in ["Account", "Account Access"] %}selected{% endif %}>
+                        Account Access
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+
+                <select id="status" name="status" required>
+                    <option value="Open"
+                        {% if ticket["status"] == "Open" %}selected{% endif %}>
+                        Open
+                    </option>
+
+                    <option value="In Progress"
+                        {% if ticket["status"] == "In Progress" %}selected{% endif %}>
+                        In Progress
+                    </option>
+
+                    <option value="Resolved"
+                        {% if ticket["status"] == "Resolved" %}selected{% endif %}>
+                        Resolved
+                    </option>
+
+                    <option value="Closed"
+                        {% if ticket["status"] == "Closed" %}selected{% endif %}>
+                        Closed
+                    </option>
+                </select>
+            </div>
+
         </div>
 
-        <div class="details-actions">
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input
+                type="text"
+                id="subject"
+                name="subject"
+                value="{{ ticket['subject'] }}"
+                required
+            >
+        </div>
 
+        <div class="form-group">
+            <label for="description">Issue Description</label>
+            <textarea
+                id="description"
+                name="description"
+                rows="7"
+                required
+            >{{ ticket["description"] }}</textarea>
+        </div>
+
+        <div class="form-actions">
             <a
                 href="{{ url_for(
-                    'edit_ticket',
+                    'ticket_details',
                     ticket_id=ticket['id']
                 ) }}"
-                class="primary-btn"
-            >
-                Edit Ticket
-            </a>
-
-            <a
-                href="{{ url_for('all_tickets') }}"
                 class="secondary-btn"
             >
-                Back to Tickets
+                Cancel
             </a>
 
+            <button type="submit" class="primary-btn">
+                Save Changes
+            </button>
         </div>
 
-    </div>
-
-    <div class="details-grid">
-
-        <div class="detail-item">
-            <span>Requester</span>
-            <strong>{{ ticket["requester"] }}</strong>
-        </div>
-
-        <div class="detail-item">
-            <span>Department</span>
-            <strong>{{ ticket["department"] }}</strong>
-        </div>
-
-        <div class="detail-item">
-            <span>Category</span>
-            <strong>{{ ticket["category"] }}</strong>
-        </div>
-
-        <div class="detail-item">
-            <span>Priority</span>
-            <strong>{{ ticket["priority"] }}</strong>
-        </div>
-
-        <div class="detail-item">
-            <span>Status</span>
-            <strong>{{ ticket["status"] }}</strong>
-        </div>
-
-    </div>
-
-    <div class="description-box">
-        <h3>Issue Description</h3>
-        <p>{{ ticket["description"] }}</p>
-    </div>
+    </form>
 
 </section>
 
