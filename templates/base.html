@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{% block title %}Falcon HelpDesk{% endblock %}</title>
 
     <link rel="stylesheet"
@@ -11,8 +12,50 @@
 
 <body>
 
-{% block content %}
-{% endblock %}
+<div class="app-layout">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">FH</div>
+            <div>
+                <h2>Falcon</h2>
+                <span>HelpDesk</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/" class="active">Dashboard</a>
+            <a href="#">Create Ticket</a>
+            <a href="#">All Tickets</a>
+            <a href="#">Assets</a>
+            <a href="#">Users</a>
+            <a href="#">Reports</a>
+            <a href="#">Settings</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <strong>Ali Almazrouei</strong>
+            <span>Administrator</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <p>IT support and ticket management platform</p>
+            </div>
+
+            <button class="primary-btn">Create Ticket</button>
+        </header>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
 
 </body>
 </html>

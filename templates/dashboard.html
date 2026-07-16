@@ -1,21 +1,90 @@
 {% extends "base.html" %}
 
-{% block title %}
-Dashboard
-{% endblock %}
+{% block title %}Dashboard | Falcon HelpDesk{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
 
-<div class="container">
+<section class="stats-grid">
 
-    <h1>🦅 Falcon HelpDesk</h1>
+    <article class="stat-card">
+        <span>Open Tickets</span>
+        <strong>12</strong>
+        <small>Requires attention</small>
+    </article>
 
-    <p class="subtitle">
+    <article class="stat-card">
+        <span>In Progress</span>
+        <strong>7</strong>
+        <small>Currently assigned</small>
+    </article>
 
-        Enterprise IT Support Platform
+    <article class="stat-card">
+        <span>Resolved</span>
+        <strong>85</strong>
+        <small>This month</small>
+    </article>
 
-    </p>
+    <article class="stat-card">
+        <span>Closed</span>
+        <strong>211</strong>
+        <small>Total completed</small>
+    </article>
 
-</div>
+</section>
+
+<section class="content-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Recent Tickets</h2>
+            <p>Latest support requests submitted to the system.</p>
+        </div>
+
+        <a href="#">View All</a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Subject</th>
+                    <th>Requester</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>#1004</td>
+                    <td>Unable to connect to Wi-Fi</td>
+                    <td>Ahmed Ali</td>
+                    <td><span class="badge high">High</span></td>
+                    <td><span class="badge open">Open</span></td>
+                </tr>
+
+                <tr>
+                    <td>#1003</td>
+                    <td>Password reset request</td>
+                    <td>Fatima Hassan</td>
+                    <td><span class="badge medium">Medium</span></td>
+                    <td><span class="badge progress">In Progress</span></td>
+                </tr>
+
+                <tr>
+                    <td>#1002</td>
+                    <td>Printer is not responding</td>
+                    <td>Omar Saeed</td>
+                    <td><span class="badge low">Low</span></td>
+                    <td><span class="badge resolved">Resolved</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
 
 {% endblock %}
