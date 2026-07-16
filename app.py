@@ -51,12 +51,15 @@ def dashboard():
             """
             SELECT
                 SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END) AS open,
-                SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END)
-                    AS in_progress,
-                SUM(CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END)
-                    AS resolved,
-                SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END)
-                    AS closed
+                SUM(
+                    CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END
+                ) AS in_progress,
+                SUM(
+                    CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END
+                ) AS resolved,
+                SUM(
+                    CASE WHEN status = 'Closed' THEN 1 ELSE 0 END
+                ) AS closed
             FROM tickets
             """
         ).fetchone()
@@ -79,6 +82,8 @@ def dashboard():
 
 @app.route("/tickets/new", methods=["GET", "POST"])
 def create_ticket():
+    message = None
+
     if request.method == "POST":
         requester = request.form["requester"].strip()
         department = request.form["department"]
@@ -110,46 +115,63 @@ def create_ticket():
                 ),
             )
 
-        return redirect(url_for("all_tickets"))
+        message = "Ticket created and saved successfully."
 
-    return render_template("create_ticket.html")
+    return render_template(
+        "create_ticket.html",
+        message=message,
+    )
 
 
 @app.route("/tickets")
 def all_tickets():
+    search = request.args.get("search", "").strip()
+    status = request.args.get("status", "").strip()
+    priority = request.args.get("priority", "").strip()
+
+    sql = """
+        SELECT *
+        FROM tickets
+        WHERE 1 = 1
+    """
+
+    values = []
+
+    if search:
+        sql += """
+            AND (
+                subject LIKE ?
+                OR requester LIKE ?
+                OR department LIKE ?
+                OR category LIKE ?
+                OR description LIKE ?
+            )
+        """
+
+        search_value = f"%{search}%"
+        values.extend([search_value] * 5)
+
+    if status:
+        sql += " AND status = ?"
+        values.append(status)
+
+    if priority:
+        sql += " AND priority = ?"
+        values.append(priority)
+
+    sql += " ORDER BY id DESC"
+
     with get_database_connection() as connection:
-        tickets = connection.execute(
-            """
-            SELECT *
-            FROM tickets
-            ORDER BY id DESC
-            """
-        ).fetchall()
+        tickets = connection.execute(sql, values).fetchall()
 
     return render_template(
         "tickets.html",
         tickets=tickets,
+        search=search,
+        selected_status=status,
+        selected_priority=priority,
     )
 
-
-@app.route("/tickets/<int:ticket_id>/status", methods=["POST"])
-def update_ticket_status(ticket_id):
-    new_status = request.form.get("status", "").strip()
-
-    if new_status not in ALLOWED_STATUSES:
-        return "Invalid ticket status.", 400
-
-    with get_database_connection() as connection:
-        connection.execute(
-            """
-            UPDATE tickets
-            SET status = ?
-            WHERE id = ?
-            """,
-            (new_status, ticket_id),
-        )
-
-    return redirect(url_for("all_tickets"))
 
 @app.route("/tickets/<int:ticket_id>")
 def ticket_details(ticket_id):
@@ -170,11 +192,17 @@ def ticket_details(ticket_id):
         "ticket_details.html",
         ticket=ticket,
     )
+
+
 @app.route("/tickets/<int:ticket_id>/edit", methods=["GET", "POST"])
 def edit_ticket(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
-            "SELECT * FROM tickets WHERE id = ?",
+            """
+            SELECT *
+            FROM tickets
+            WHERE id = ?
+            """,
             (ticket_id,),
         ).fetchone()
 
@@ -218,10 +246,38 @@ def edit_ticket(ticket_id):
             )
 
             return redirect(
-                url_for("ticket_details", ticket_id=ticket_id)
+                url_for(
+                    "ticket_details",
+                    ticket_id=ticket_id,
+                )
             )
 
-    return render_template("edit_ticket.html", ticket=ticket)
+    return render_template(
+        "edit_ticket.html",
+        ticket=ticket,
+    )
+
+
+@app.route("/tickets/<int:ticket_id>/status", methods=["POST"])
+def update_ticket_status(ticket_id):
+    new_status = request.form.get("status", "").strip()
+
+    if new_status not in ALLOWED_STATUSES:
+        return "Invalid ticket status.", 400
+
+    with get_database_connection() as connection:
+        connection.execute(
+            """
+            UPDATE tickets
+            SET status = ?
+            WHERE id = ?
+            """,
+            (new_status, ticket_id),
+        )
+
+    return redirect(url_for("all_tickets"))
+
+
 initialize_database()
 
 

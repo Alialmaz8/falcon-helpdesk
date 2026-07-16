@@ -1,25 +1,97 @@
 {% extends "base.html" %}
 
-{% block title %}All Tickets | Falcon HelpDesk{% endblock %}
+{% block title %}
+All Tickets | Falcon HelpDesk
+{% endblock %}
 
-{% block page_title %}All Tickets{% endblock %}
+{% block page_title %}
+All Tickets
+{% endblock %}
 
 {% block content %}
 
 <section class="content-panel">
 
-   <div class="panel-header">
-    <div>
-        <h2>Support Tickets</h2>
-        <p>Review and update all submitted support requests.</p>
+    <div class="panel-header">
+        <div>
+            <h2>Support Tickets</h2>
+            <p>Review and update all submitted support requests.</p>
+        </div>
+
+        <a
+            href="{{ url_for('create_ticket') }}"
+            class="primary-btn"
+        >
+            New Ticket
+        </a>
     </div>
 
-    <a class="primary-btn" href="{{ url_for('create_ticket') }}">
-        New Ticket
-    </a>
-</div>
+    <form method="GET" class="ticket-filters">
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search by subject, requester or department"
+        >
+
+        <select name="status">
+            <option value="">All statuses</option>
+
+            {% for status in [
+                "Open",
+                "In Progress",
+                "Resolved",
+                "Closed"
+            ] %}
+                <option
+                    value="{{ status }}"
+                    {% if selected_status == status %}
+                        selected
+                    {% endif %}
+                >
+                    {{ status }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="priority">
+            <option value="">All priorities</option>
+
+            {% for priority in [
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+            ] %}
+                <option
+                    value="{{ priority }}"
+                    {% if selected_priority == priority %}
+                        selected
+                    {% endif %}
+                >
+                    {{ priority }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="small-btn">
+            Search
+        </button>
+
+        <a
+            href="{{ url_for('all_tickets') }}"
+            class="clear-filter"
+        >
+            Clear
+        </a>
+
+    </form>
+
     <div class="table-wrapper">
+
         <table>
+
             <thead>
                 <tr>
                     <th>Ticket</th>
@@ -33,16 +105,22 @@
             </thead>
 
             <tbody>
+
                 {% for ticket in tickets %}
+
                 <tr>
+
                     <td>
-    <a
-        class="ticket-link"
-        href="{{ url_for('ticket_details', ticket_id=ticket['id']) }}"
-    >
-        #{{ ticket["id"] }}
-    </a>
-</td>
+                        <a
+                            class="ticket-link"
+                            href="{{ url_for(
+                                'ticket_details',
+                                ticket_id=ticket['id']
+                            ) }}"
+                        >
+                            #{{ ticket["id"] }}
+                        </a>
+                    </td>
 
                     <td>
                         <strong>{{ ticket["subject"] }}</strong>
@@ -58,21 +136,33 @@
                                 {{ ticket["priority"] }}
                             </span>
                         {% elif ticket["priority"] == "Medium" %}
-                            <span class="badge medium">Medium</span>
+                            <span class="badge medium">
+                                Medium
+                            </span>
                         {% else %}
-                            <span class="badge low">Low</span>
+                            <span class="badge low">
+                                Low
+                            </span>
                         {% endif %}
                     </td>
 
                     <td>
                         {% if ticket["status"] == "Open" %}
-                            <span class="badge open">Open</span>
+                            <span class="badge open">
+                                Open
+                            </span>
                         {% elif ticket["status"] == "In Progress" %}
-                            <span class="badge progress">In Progress</span>
+                            <span class="badge progress">
+                                In Progress
+                            </span>
                         {% elif ticket["status"] == "Resolved" %}
-                            <span class="badge resolved">Resolved</span>
+                            <span class="badge resolved">
+                                Resolved
+                            </span>
                         {% else %}
-                            <span class="badge closed">Closed</span>
+                            <span class="badge closed">
+                                Closed
+                            </span>
                         {% endif %}
                     </td>
 
@@ -85,60 +175,53 @@
                             ) }}"
                             class="status-form"
                         >
+
                             <select name="status">
-                                <option
-                                    value="Open"
-                                    {% if ticket["status"] == "Open" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Open
-                                </option>
 
-                                <option
-                                    value="In Progress"
-                                    {% if ticket["status"] == "In Progress" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    In Progress
-                                </option>
+                                {% for status in [
+                                    "Open",
+                                    "In Progress",
+                                    "Resolved",
+                                    "Closed"
+                                ] %}
+                                    <option
+                                        value="{{ status }}"
+                                        {% if ticket["status"] == status %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ status }}
+                                    </option>
+                                {% endfor %}
 
-                                <option
-                                    value="Resolved"
-                                    {% if ticket["status"] == "Resolved" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Resolved
-                                </option>
-
-                                <option
-                                    value="Closed"
-                                    {% if ticket["status"] == "Closed" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Closed
-                                </option>
                             </select>
 
-                            <button type="submit" class="small-btn">
+                            <button
+                                type="submit"
+                                class="small-btn"
+                            >
                                 Save
                             </button>
+
                         </form>
                     </td>
+
                 </tr>
 
                 {% else %}
+
                 <tr>
-                    <td colspan="7">
-                        No tickets have been created.
+                    <td colspan="7" class="empty-message">
+                        No tickets match your search.
                     </td>
                 </tr>
+
                 {% endfor %}
+
             </tbody>
+
         </table>
+
     </div>
 
 </section>
