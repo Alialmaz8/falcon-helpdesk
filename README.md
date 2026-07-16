@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="./static/images/uae_flag.png" width="90" alt="UAE Flag">
-&nbsp;&nbsp;&nbsp;
-<img src="./static/images/abu_dhabi_flag.png" width="90" alt="Abu Dhabi Flag">
+<img src="./screenshots/uae_flag.png" width="90" alt="UAE Flag">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="./screenshots/abudhabi_flag.png" width="90" alt="Abu Dhabi Flag">
 
 # Falcon HelpDesk
 
