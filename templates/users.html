@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}
+Users | Falcon HelpDesk
+{% endblock %}
+
+{% block page_title %}
+Users
+{% endblock %}
+
+{% block content %}
+
+<section class="form-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Add User</h2>
+            <p>Create a user who can sign in to the HelpDesk system.</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div
+            style="
+                background: #fee2e2;
+                color: #b91c1c;
+                padding: 14px;
+                border-radius: 9px;
+                margin-bottom: 20px;
+            "
+        >
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="success-message">
+            {{ success }}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="ticket-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+
+                <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    placeholder="Enter the employee name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Choose a username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Temporary Password</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Minimum 8 characters"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="role">Role</label>
+
+                <select id="role" name="role" required>
+                    <option value="">Select role</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Technician">Technician</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary-btn">
+                Add User
+            </button>
+        </div>
+
+    </form>
+
+</section>
+
+<section class="content-panel" style="margin-top: 24px;">
+
+    <div class="panel-header">
+        <div>
+            <h2>System Users</h2>
+            <p>Accounts that can sign in to Falcon HelpDesk.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for user in users %}
+
+                <tr>
+                    <td>#{{ user["id"] }}</td>
+                    <td><strong>{{ user["full_name"] }}</strong></td>
+                    <td>{{ user["username"] }}</td>
+                    <td>{{ user["role"] }}</td>
+
+                    <td>
+                        {% if user["id"] == session.get("user_id") %}
+
+                            <span class="badge open">
+                                Current Account
+                            </span>
+
+                        {% else %}
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'delete_user',
+                                    user_id=user['id']
+                                ) }}"
+                                onsubmit="return confirm(
+                                    'Delete this user account?'
+                                );"
+                            >
+                                <button
+                                    type="submit"
+                                    class="small-btn"
+                                    style="background: #dc2626;"
+                                >
+                                    Delete
+                                </button>
+                            </form>
+
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -28,6 +28,7 @@
         </div>
 
         <nav class="sidebar-nav">
+
             <a
                 href="{{ url_for('dashboard') }}"
                 class="{% if request.endpoint == 'dashboard' %}active{% endif %}"
@@ -44,19 +45,35 @@
 
             <a
                 href="{{ url_for('all_tickets') }}"
-                class="{% if request.endpoint == 'all_tickets' %}active{% endif %}"
+                class="{% if request.endpoint in [
+                    'all_tickets',
+                    'ticket_details',
+                    'edit_ticket'
+                ] %}active{% endif %}"
             >
                 All Tickets
             </a>
 
-            <a href="#">Assets</a>
-            <a href="#">Users</a>
-            <a href="#">Reports</a>
-            <a href="#">Settings</a>
+            {% if session.get("role") in ["Administrator", "Technician"] %}
+                <a href="#">Assets</a>
+                <a href="#">Reports</a>
+            {% endif %}
+
+            {% if session.get("role") == "Administrator" %}
+                <a
+                    href="{{ url_for('users_page') }}"
+                    class="{% if request.endpoint == 'users_page' %}active{% endif %}"
+                >
+                    Users
+                </a>
+
+                <a href="#">Settings</a>
+            {% endif %}
 
             <a href="{{ url_for('logout') }}">
                 Sign Out
             </a>
+
         </nav>
 
         <div class="sidebar-footer">

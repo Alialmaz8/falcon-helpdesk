@@ -31,6 +31,12 @@ ALLOWED_STATUSES = {
     "Closed",
 }
 
+ALLOWED_ROLES = {
+    "Administrator",
+    "Technician",
+    "User",
+}
+
 
 def get_database_connection():
     connection = sqlite3.connect(DATABASE_PATH)
@@ -98,6 +104,23 @@ def login_required(view_function):
         return view_function(*args, **kwargs)
 
     return wrapped_view
+
+
+def role_required(*allowed_roles):
+    def decorator(view_function):
+        @wraps(view_function)
+        def wrapped_view(*args, **kwargs):
+            if "user_id" not in session:
+                return redirect(url_for("login"))
+
+            if session.get("role") not in allowed_roles:
+                return "You do not have permission to access this page.", 403
+
+            return view_function(*args, **kwargs)
+
+        return wrapped_view
+
+    return decorator
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -172,22 +195,14 @@ def dashboard():
                     CASE WHEN status = 'Closed'
                     THEN 1 ELSE 0 END
                 ) AS closed
-
             FROM tickets
             """
         ).fetchone()
 
         recent_tickets = connection.execute(
             """
-            SELECT
-                id,
-                requester,
-                priority,
-                subject,
-                status
-
+            SELECT id, requester, priority, subject, status
             FROM tickets
-
             ORDER BY id DESC
             LIMIT 5
             """
@@ -284,10 +299,7 @@ def all_tickets():
     sql += " ORDER BY id DESC"
 
     with get_database_connection() as connection:
-        tickets = connection.execute(
-            sql,
-            values,
-        ).fetchall()
+        tickets = connection.execute(sql, values).fetchall()
 
     return render_template(
         "tickets.html",
@@ -324,7 +336,7 @@ def ticket_details(ticket_id):
     "/tickets/<int:ticket_id>/edit",
     methods=["GET", "POST"],
 )
-@login_required
+@role_required("Administrator", "Technician")
 def edit_ticket(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
@@ -354,7 +366,6 @@ def edit_ticket(ticket_id):
             connection.execute(
                 """
                 UPDATE tickets
-
                 SET requester = ?,
                     department = ?,
                     priority = ?,
@@ -362,7 +373,6 @@ def edit_ticket(ticket_id):
                     subject = ?,
                     description = ?,
                     status = ?
-
                 WHERE id = ?
                 """,
                 (
@@ -394,7 +404,7 @@ def edit_ticket(ticket_id):
     "/tickets/<int:ticket_id>/status",
     methods=["POST"],
 )
-@login_required
+@role_required("Administrator", "Technician")
 def update_ticket_status(ticket_id):
     new_status = request.form.get("status", "").strip()
 
@@ -408,10 +418,7 @@ def update_ticket_status(ticket_id):
             SET status = ?
             WHERE id = ?
             """,
-            (
-                new_status,
-                ticket_id,
-            ),
+            (new_status, ticket_id),
         )
 
     return redirect(url_for("all_tickets"))
@@ -421,7 +428,7 @@ def update_ticket_status(ticket_id):
     "/tickets/<int:ticket_id>/delete",
     methods=["POST"],
 )
-@login_required
+@role_required("Administrator")
 def delete_ticket(ticket_id):
     with get_database_connection() as connection:
         ticket = connection.execute(
@@ -445,6 +452,103 @@ def delete_ticket(ticket_id):
         )
 
     return redirect(url_for("all_tickets"))
+
+
+@app.route("/users", methods=["GET", "POST"])
+@role_required("Administrator")
+def users_page():
+    error = None
+    success = request.args.get("success")
+
+    if request.method == "POST":
+        full_name = request.form.get("full_name", "").strip()
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        role = request.form.get("role", "").strip()
+
+        if not full_name or not username or not password:
+            error = "Complete all user fields."
+
+        elif role not in ALLOWED_ROLES:
+            error = "Select a valid role."
+
+        elif len(password) < 8:
+            error = "The password must contain at least 8 characters."
+
+        else:
+            try:
+                with get_database_connection() as connection:
+                    connection.execute(
+                        """
+                        INSERT INTO users (
+                            full_name,
+                            username,
+                            password_hash,
+                            role
+                        )
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            full_name,
+                            username,
+                            generate_password_hash(password),
+                            role,
+                        ),
+                    )
+
+                return redirect(
+                    url_for(
+                        "users_page",
+                        success="User added successfully.",
+                    )
+                )
+
+            except sqlite3.IntegrityError:
+                error = "That username already exists."
+
+    with get_database_connection() as connection:
+        users = connection.execute(
+            """
+            SELECT id, full_name, username, role
+            FROM users
+            ORDER BY id
+            """
+        ).fetchall()
+
+    return render_template(
+        "users.html",
+        users=users,
+        error=error,
+        success=success,
+    )
+
+
+@app.route("/users/<int:user_id>/delete", methods=["POST"])
+@role_required("Administrator")
+def delete_user(user_id):
+    if user_id == session.get("user_id"):
+        return redirect(
+            url_for(
+                "users_page",
+                success="You cannot delete your own account.",
+            )
+        )
+
+    with get_database_connection() as connection:
+        connection.execute(
+            """
+            DELETE FROM users
+            WHERE id = ?
+            """,
+            (user_id,),
+        )
+
+    return redirect(
+        url_for(
+            "users_page",
+            success="User deleted.",
+        )
+    )
 
 
 initialize_database()

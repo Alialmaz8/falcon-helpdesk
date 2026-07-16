@@ -10,12 +10,14 @@ All Tickets
 
 {% block content %}
 
+{% set can_manage = session.get("role") in ["Administrator", "Technician"] %}
+
 <section class="content-panel">
 
     <div class="panel-header">
         <div>
             <h2>Support Tickets</h2>
-            <p>Review and update all submitted support requests.</p>
+            <p>Review all submitted support requests.</p>
         </div>
 
         <a
@@ -100,7 +102,10 @@ All Tickets
                     <th>Department</th>
                     <th>Priority</th>
                     <th>Status</th>
-                    <th>Update</th>
+
+                    {% if can_manage %}
+                        <th>Update</th>
+                    {% endif %}
                 </tr>
             </thead>
 
@@ -127,7 +132,6 @@ All Tickets
                     </td>
 
                     <td>{{ ticket["requester"] }}</td>
-
                     <td>{{ ticket["department"] }}</td>
 
                     <td>
@@ -136,82 +140,73 @@ All Tickets
                                 {{ ticket["priority"] }}
                             </span>
                         {% elif ticket["priority"] == "Medium" %}
-                            <span class="badge medium">
-                                Medium
-                            </span>
+                            <span class="badge medium">Medium</span>
                         {% else %}
-                            <span class="badge low">
-                                Low
-                            </span>
+                            <span class="badge low">Low</span>
                         {% endif %}
                     </td>
 
                     <td>
                         {% if ticket["status"] == "Open" %}
-                            <span class="badge open">
-                                Open
-                            </span>
+                            <span class="badge open">Open</span>
                         {% elif ticket["status"] == "In Progress" %}
-                            <span class="badge progress">
-                                In Progress
-                            </span>
+                            <span class="badge progress">In Progress</span>
                         {% elif ticket["status"] == "Resolved" %}
-                            <span class="badge resolved">
-                                Resolved
-                            </span>
+                            <span class="badge resolved">Resolved</span>
                         {% else %}
-                            <span class="badge closed">
-                                Closed
-                            </span>
+                            <span class="badge closed">Closed</span>
                         {% endif %}
                     </td>
 
-                    <td>
-                        <form
-                            method="POST"
-                            action="{{ url_for(
-                                'update_ticket_status',
-                                ticket_id=ticket['id']
-                            ) }}"
-                            class="status-form"
-                        >
-
-                            <select name="status">
-
-                                {% for status in [
-                                    "Open",
-                                    "In Progress",
-                                    "Resolved",
-                                    "Closed"
-                                ] %}
-                                    <option
-                                        value="{{ status }}"
-                                        {% if ticket["status"] == status %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        {{ status }}
-                                    </option>
-                                {% endfor %}
-
-                            </select>
-
-                            <button
-                                type="submit"
-                                class="small-btn"
+                    {% if can_manage %}
+                        <td>
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'update_ticket_status',
+                                    ticket_id=ticket['id']
+                                ) }}"
+                                class="status-form"
                             >
-                                Save
-                            </button>
+                                <select name="status">
 
-                        </form>
-                    </td>
+                                    {% for status in [
+                                        "Open",
+                                        "In Progress",
+                                        "Resolved",
+                                        "Closed"
+                                    ] %}
+                                        <option
+                                            value="{{ status }}"
+                                            {% if ticket["status"] == status %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ status }}
+                                        </option>
+                                    {% endfor %}
+
+                                </select>
+
+                                <button
+                                    type="submit"
+                                    class="small-btn"
+                                >
+                                    Save
+                                </button>
+                            </form>
+                        </td>
+                    {% endif %}
 
                 </tr>
 
                 {% else %}
 
                 <tr>
-                    <td colspan="7" class="empty-message">
+                    <td
+                        colspan="{% if can_manage %}7{% else %}6{% endif %}"
+                        class="empty-message"
+                    >
                         No tickets match your search.
                     </td>
                 </tr>
