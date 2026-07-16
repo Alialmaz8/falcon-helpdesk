@@ -1,11 +1,12 @@
 <div align="center">
+<img src="static/images/uae_flag.png" width="60">
+<img src="static/images/abu_dhabi_flag.png" width="60">
 
-# 🟥⬜ 🇦🇪 Falcon HelpDesk
+# Falcon HelpDesk
 
 ### IT Support and Ticket Management System
 
 Built by an Emirati Computer Science student from Abu Dhabi studying in California.
-
 </div>
 
 ---
