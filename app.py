@@ -699,6 +699,131 @@ def delete_asset(asset_id):
     )
 
 
+@app.route("/reports")
+@role_required("Administrator", "Technician")
+def reports_page():
+    with get_database_connection() as connection:
+        ticket_summary = connection.execute(
+            """
+            SELECT
+                COUNT(*) AS total,
+
+                SUM(
+                    CASE WHEN status = 'Open'
+                    THEN 1 ELSE 0 END
+                ) AS open,
+
+                SUM(
+                    CASE WHEN status = 'In Progress'
+                    THEN 1 ELSE 0 END
+                ) AS in_progress,
+
+                SUM(
+                    CASE WHEN status = 'Resolved'
+                    THEN 1 ELSE 0 END
+                ) AS resolved,
+
+                SUM(
+                    CASE WHEN status = 'Closed'
+                    THEN 1 ELSE 0 END
+                ) AS closed
+
+            FROM tickets
+            """
+        ).fetchone()
+
+        priority_summary = connection.execute(
+            """
+            SELECT priority, COUNT(*) AS total
+            FROM tickets
+            GROUP BY priority
+
+            ORDER BY
+                CASE priority
+                    WHEN 'Critical' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Medium' THEN 3
+                    WHEN 'Low' THEN 4
+                    ELSE 5
+                END
+            """
+        ).fetchall()
+
+        asset_summary = connection.execute(
+            """
+            SELECT
+                COUNT(*) AS total,
+
+                SUM(
+                    CASE WHEN status = 'Available'
+                    THEN 1 ELSE 0 END
+                ) AS available,
+
+                SUM(
+                    CASE WHEN status = 'Assigned'
+                    THEN 1 ELSE 0 END
+                ) AS assigned,
+
+                SUM(
+                    CASE WHEN status = 'Repair'
+                    THEN 1 ELSE 0 END
+                ) AS repair,
+
+                SUM(
+                    CASE WHEN status = 'Retired'
+                    THEN 1 ELSE 0 END
+                ) AS retired
+
+            FROM assets
+            """
+        ).fetchone()
+
+        asset_type_summary = connection.execute(
+            """
+            SELECT asset_type, COUNT(*) AS total
+            FROM assets
+            GROUP BY asset_type
+            ORDER BY total DESC
+            """
+        ).fetchall()
+
+        user_count = connection.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM users
+            """
+        ).fetchone()
+
+        recent_tickets = connection.execute(
+            """
+            SELECT id, subject, requester, priority, status
+            FROM tickets
+            ORDER BY id DESC
+            LIMIT 5
+            """
+        ).fetchall()
+
+        recent_assets = connection.execute(
+            """
+            SELECT asset_tag, asset_name, asset_type, status
+            FROM assets
+            ORDER BY id DESC
+            LIMIT 5
+            """
+        ).fetchall()
+
+    return render_template(
+        "reports.html",
+        ticket_summary=ticket_summary,
+        priority_summary=priority_summary,
+        asset_summary=asset_summary,
+        asset_type_summary=asset_type_summary,
+        user_count=user_count,
+        recent_tickets=recent_tickets,
+        recent_assets=recent_assets,
+    )
+
+
 @app.route("/users", methods=["GET", "POST"])
 @role_required("Administrator")
 def users_page():

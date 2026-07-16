@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>{% block title %}Falcon HelpDesk{% endblock %}</title>
 
@@ -58,17 +62,28 @@
             </a>
 
             {% if session.get("role") in ["Administrator", "Technician"] %}
+
                 <a
                     href="{{ url_for('assets_page') }}"
-                    class="{% if request.endpoint == 'assets_page' %}active{% endif %}"
+                    class="{% if request.endpoint in [
+                        'assets_page',
+                        'edit_asset'
+                    ] %}active{% endif %}"
                 >
                     Assets
                 </a>
 
-                <a href="#">Reports</a>
+                <a
+                    href="{{ url_for('reports_page') }}"
+                    class="{% if request.endpoint == 'reports_page' %}active{% endif %}"
+                >
+                    Reports
+                </a>
+
             {% endif %}
 
             {% if session.get("role") == "Administrator" %}
+
                 <a
                     href="{{ url_for('users_page') }}"
                     class="{% if request.endpoint == 'users_page' %}active{% endif %}"
@@ -77,6 +92,7 @@
                 </a>
 
                 <a href="#">Settings</a>
+
             {% endif %}
 
             <a href="{{ url_for('logout') }}">

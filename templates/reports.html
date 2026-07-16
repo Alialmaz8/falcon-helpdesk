@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reports | Falcon HelpDesk
+{% endblock %}
+
+{% block page_title %}
+Reports
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/reports.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="report-cards">
+
+    <div class="report-card">
+        <span>Total Tickets</span>
+        <strong>{{ ticket_summary["total"] or 0 }}</strong>
+    </div>
+
+    <div class="report-card">
+        <span>Open Tickets</span>
+        <strong>{{ ticket_summary["open"] or 0 }}</strong>
+    </div>
+
+    <div class="report-card">
+        <span>Total Assets</span>
+        <strong>{{ asset_summary["total"] or 0 }}</strong>
+    </div>
+
+    <div class="report-card">
+        <span>System Users</span>
+        <strong>{{ user_count["total"] or 0 }}</strong>
+    </div>
+
+</section>
+
+<section class="report-grid">
+
+    <div class="content-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>Tickets by Status</h2>
+                <p>Current ticket workload.</p>
+            </div>
+        </div>
+
+        <div class="report-list">
+            <div>
+                <span>Open</span>
+                <strong>{{ ticket_summary["open"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>In Progress</span>
+                <strong>{{ ticket_summary["in_progress"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>Resolved</span>
+                <strong>{{ ticket_summary["resolved"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>Closed</span>
+                <strong>{{ ticket_summary["closed"] or 0 }}</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="content-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>Tickets by Priority</h2>
+                <p>Tickets at each priority level.</p>
+            </div>
+        </div>
+
+        <div class="report-list">
+
+            {% for item in priority_summary %}
+                <div>
+                    <span>{{ item["priority"] }}</span>
+                    <strong>{{ item["total"] }}</strong>
+                </div>
+            {% else %}
+                <p class="empty-report">No ticket data available.</p>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <div class="content-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>Assets by Status</h2>
+                <p>Current equipment availability.</p>
+            </div>
+        </div>
+
+        <div class="report-list">
+            <div>
+                <span>Available</span>
+                <strong>{{ asset_summary["available"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>Assigned</span>
+                <strong>{{ asset_summary["assigned"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>Repair</span>
+                <strong>{{ asset_summary["repair"] or 0 }}</strong>
+            </div>
+
+            <div>
+                <span>Retired</span>
+                <strong>{{ asset_summary["retired"] or 0 }}</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="content-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>Assets by Type</h2>
+                <p>Registered equipment categories.</p>
+            </div>
+        </div>
+
+        <div class="report-list">
+
+            {% for item in asset_type_summary %}
+                <div>
+                    <span>{{ item["asset_type"] }}</span>
+                    <strong>{{ item["total"] }}</strong>
+                </div>
+            {% else %}
+                <p class="empty-report">No asset data available.</p>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="content-panel report-table">
+
+    <div class="panel-header">
+        <div>
+            <h2>Recent Tickets</h2>
+            <p>Five most recently created tickets.</p>
+        </div>
+
+        <a href="{{ url_for('all_tickets') }}">
+            View Tickets
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Subject</th>
+                    <th>Requester</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for ticket in recent_tickets %}
+                    <tr>
+                        <td>
+                            <a
+                                class="ticket-link"
+                                href="{{ url_for(
+                                    'ticket_details',
+                                    ticket_id=ticket['id']
+                                ) }}"
+                            >
+                                #{{ ticket["id"] }}
+                            </a>
+                        </td>
+
+                        <td>{{ ticket["subject"] }}</td>
+                        <td>{{ ticket["requester"] }}</td>
+                        <td>{{ ticket["priority"] }}</td>
+                        <td>{{ ticket["status"] }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-message">
+                            No tickets available.
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+</section>
+
+<section class="content-panel report-table">
+
+    <div class="panel-header">
+        <div>
+            <h2>Recent Assets</h2>
+            <p>Five most recently registered assets.</p>
+        </div>
+
+        <a href="{{ url_for('assets_page') }}">
+            View Assets
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset Tag</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for asset in recent_assets %}
+                    <tr>
+                        <td>{{ asset["asset_tag"] }}</td>
+                        <td>{{ asset["asset_name"] }}</td>
+                        <td>{{ asset["asset_type"] }}</td>
+                        <td>{{ asset["status"] }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="empty-message">
+                            No assets available.
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

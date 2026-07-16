@@ -15,6 +15,7 @@ All Tickets
 <section class="content-panel">
 
     <div class="panel-header">
+
         <div>
             <h2>Support Tickets</h2>
             <p>Review all submitted support requests.</p>
@@ -26,6 +27,7 @@ All Tickets
         >
             New Ticket
         </a>
+
     </div>
 
     <form method="GET" class="ticket-filters">
@@ -136,29 +138,56 @@ All Tickets
 
                     <td>
                         {% if ticket["priority"] in ["High", "Critical"] %}
+
                             <span class="badge high">
                                 {{ ticket["priority"] }}
                             </span>
+
                         {% elif ticket["priority"] == "Medium" %}
-                            <span class="badge medium">Medium</span>
+
+                            <span class="badge medium">
+                                Medium
+                            </span>
+
                         {% else %}
-                            <span class="badge low">Low</span>
+
+                            <span class="badge low">
+                                Low
+                            </span>
+
                         {% endif %}
                     </td>
 
                     <td>
                         {% if ticket["status"] == "Open" %}
-                            <span class="badge open">Open</span>
+
+                            <span class="badge open">
+                                Open
+                            </span>
+
                         {% elif ticket["status"] == "In Progress" %}
-                            <span class="badge progress">In Progress</span>
+
+                            <span class="badge progress">
+                                In Progress
+                            </span>
+
                         {% elif ticket["status"] == "Resolved" %}
-                            <span class="badge resolved">Resolved</span>
+
+                            <span class="badge resolved">
+                                Resolved
+                            </span>
+
                         {% else %}
-                            <span class="badge closed">Closed</span>
+
+                            <span class="badge closed">
+                                Closed
+                            </span>
+
                         {% endif %}
                     </td>
 
                     {% if can_manage %}
+
                         <td>
                             <form
                                 method="POST"
@@ -168,6 +197,7 @@ All Tickets
                                 ) }}"
                                 class="status-form"
                             >
+
                                 <select name="status">
 
                                     {% for status in [
@@ -194,8 +224,10 @@ All Tickets
                                 >
                                     Save
                                 </button>
+
                             </form>
                         </td>
+
                     {% endif %}
 
                 </tr>
