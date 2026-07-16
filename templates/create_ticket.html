@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Create Ticket | Falcon HelpDesk{% endblock %}
+
+{% block page_title %}Create Ticket{% endblock %}
+
+{% block content %}
+
+<section class="form-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Submit a Support Request</h2>
+            <p>Provide the issue details so the support team can assist you.</p>
+        </div>
+    </div>
+
+    {% if message %}
+        <div class="success-message">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="ticket-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="requester">Requester Name</label>
+                <input
+                    type="text"
+                    id="requester"
+                    name="requester"
+                    placeholder="Enter full name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department</label>
+                <select id="department" name="department" required>
+                    <option value="">Select department</option>
+                    <option value="IT">Information Technology</option>
+                    <option value="HR">Human Resources</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Operations">Operations</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority" required>
+                    <option value="">Select priority</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Select category</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Software">Software</option>
+                    <option value="Network">Network</option>
+                    <option value="Account">Account Access</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input
+                type="text"
+                id="subject"
+                name="subject"
+                placeholder="Brief description of the issue"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="description">Issue Description</label>
+            <textarea
+                id="description"
+                name="description"
+                rows="7"
+                placeholder="Explain the issue and any troubleshooting already attempted"
+                required
+            ></textarea>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('dashboard') }}" class="secondary-btn">
+                Cancel
+            </a>
+
+            <button type="submit" class="primary-btn">
+                Submit Ticket
+            </button>
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

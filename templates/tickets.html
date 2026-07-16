@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}All Tickets | Falcon HelpDesk{% endblock %}
+
+{% block page_title %}All Tickets{% endblock %}
+
+{% block content %}
+
+<section class="content-panel">
+
+   <div class="panel-header">
+    <div>
+        <h2>Support Tickets</h2>
+        <p>Review and update all submitted support requests.</p>
+    </div>
+
+    <a class="primary-btn" href="{{ url_for('create_ticket') }}">
+        New Ticket
+    </a>
+</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Subject</th>
+                    <th>Requester</th>
+                    <th>Department</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>#{{ ticket["id"] }}</td>
+
+                    <td>
+                        <strong>{{ ticket["subject"] }}</strong>
+                    </td>
+
+                    <td>{{ ticket["requester"] }}</td>
+
+                    <td>{{ ticket["department"] }}</td>
+
+                    <td>
+                        {% if ticket["priority"] in ["High", "Critical"] %}
+                            <span class="badge high">
+                                {{ ticket["priority"] }}
+                            </span>
+                        {% elif ticket["priority"] == "Medium" %}
+                            <span class="badge medium">Medium</span>
+                        {% else %}
+                            <span class="badge low">Low</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if ticket["status"] == "Open" %}
+                            <span class="badge open">Open</span>
+                        {% elif ticket["status"] == "In Progress" %}
+                            <span class="badge progress">In Progress</span>
+                        {% elif ticket["status"] == "Resolved" %}
+                            <span class="badge resolved">Resolved</span>
+                        {% else %}
+                            <span class="badge closed">Closed</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'update_ticket_status',
+                                ticket_id=ticket['id']
+                            ) }}"
+                            class="status-form"
+                        >
+                            <select name="status">
+                                <option
+                                    value="Open"
+                                    {% if ticket["status"] == "Open" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Open
+                                </option>
+
+                                <option
+                                    value="In Progress"
+                                    {% if ticket["status"] == "In Progress" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    In Progress
+                                </option>
+
+                                <option
+                                    value="Resolved"
+                                    {% if ticket["status"] == "Resolved" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Resolved
+                                </option>
+
+                                <option
+                                    value="Closed"
+                                    {% if ticket["status"] == "Closed" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Closed
+                                </option>
+                            </select>
+
+                            <button type="submit" class="small-btn">
+                                Save
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td colspan="7">
+                        No tickets have been created.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}

@@ -6,8 +6,10 @@
 
     <title>{% block title %}Falcon HelpDesk{% endblock %}</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
 </head>
 
 <body>
@@ -15,8 +17,10 @@
 <div class="app-layout">
 
     <aside class="sidebar">
+
         <div class="brand">
             <div class="brand-logo">FH</div>
+
             <div>
                 <h2>Falcon</h2>
                 <span>HelpDesk</span>
@@ -24,9 +28,9 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a href="/" class="active">Dashboard</a>
-            <a href="#">Create Ticket</a>
-            <a href="#">All Tickets</a>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('create_ticket') }}">Create Ticket</a>
+            <a href="{{ url_for('all_tickets') }}">All Tickets</a>
             <a href="#">Assets</a>
             <a href="#">Users</a>
             <a href="#">Reports</a>
@@ -42,12 +46,24 @@
     <main class="main-content">
 
         <header class="topbar">
+
             <div>
-                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <h1>
+                    {% block page_title %}
+                    Dashboard
+                    {% endblock %}
+                </h1>
+
                 <p>IT support and ticket management platform</p>
             </div>
 
-            <button class="primary-btn">Create Ticket</button>
+            <a
+                class="primary-btn"
+                href="{{ url_for('create_ticket') }}"
+            >
+                Create Ticket
+            </a>
+
         </header>
 
         {% block content %}

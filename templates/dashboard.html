@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | Falcon HelpDesk{% endblock %}
+{% block title %}
+Dashboard | Falcon HelpDesk
+{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}
+Dashboard
+{% endblock %}
 
 {% block content %}
 
@@ -10,26 +14,26 @@
 
     <article class="stat-card">
         <span>Open Tickets</span>
-        <strong>12</strong>
+        <strong>{{ stats["open"] or 0 }}</strong>
         <small>Requires attention</small>
     </article>
 
     <article class="stat-card">
         <span>In Progress</span>
-        <strong>7</strong>
+        <strong>{{ stats["in_progress"] or 0 }}</strong>
         <small>Currently assigned</small>
     </article>
 
     <article class="stat-card">
         <span>Resolved</span>
-        <strong>85</strong>
-        <small>This month</small>
+        <strong>{{ stats["resolved"] or 0 }}</strong>
+        <small>Successfully completed</small>
     </article>
 
     <article class="stat-card">
         <span>Closed</span>
-        <strong>211</strong>
-        <small>Total completed</small>
+        <strong>{{ stats["closed"] or 0 }}</strong>
+        <small>Total closed tickets</small>
     </article>
 
 </section>
@@ -37,16 +41,22 @@
 <section class="content-panel">
 
     <div class="panel-header">
+
         <div>
             <h2>Recent Tickets</h2>
             <p>Latest support requests submitted to the system.</p>
         </div>
 
-        <a href="#">View All</a>
+        <a href="{{ url_for('all_tickets') }}">
+            View All
+        </a>
+
     </div>
 
     <div class="table-wrapper">
+
         <table>
+
             <thead>
                 <tr>
                     <th>Ticket</th>
@@ -58,31 +68,88 @@
             </thead>
 
             <tbody>
-                <tr>
-                    <td>#1004</td>
-                    <td>Unable to connect to Wi-Fi</td>
-                    <td>Ahmed Ali</td>
-                    <td><span class="badge high">High</span></td>
-                    <td><span class="badge open">Open</span></td>
-                </tr>
+
+                {% for ticket in tickets %}
 
                 <tr>
-                    <td>#1003</td>
-                    <td>Password reset request</td>
-                    <td>Fatima Hassan</td>
-                    <td><span class="badge medium">Medium</span></td>
-                    <td><span class="badge progress">In Progress</span></td>
+
+                    <td>#{{ ticket["id"] }}</td>
+
+                    <td>{{ ticket["subject"] }}</td>
+
+                    <td>{{ ticket["requester"] }}</td>
+
+                    <td>
+
+                        {% if ticket["priority"] == "High"
+                              or ticket["priority"] == "Critical" %}
+
+                            <span class="badge high">
+                                {{ ticket["priority"] }}
+                            </span>
+
+                        {% elif ticket["priority"] == "Medium" %}
+
+                            <span class="badge medium">
+                                Medium
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge low">
+                                Low
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if ticket["status"] == "Open" %}
+
+                            <span class="badge open">
+                                Open
+                            </span>
+
+                        {% elif ticket["status"] == "In Progress" %}
+
+                            <span class="badge progress">
+                                In Progress
+                            </span>
+
+                        {% elif ticket["status"] == "Resolved" %}
+
+                            <span class="badge resolved">
+                                Resolved
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge closed">
+                                Closed
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
                 </tr>
 
+                {% else %}
+
                 <tr>
-                    <td>#1002</td>
-                    <td>Printer is not responding</td>
-                    <td>Omar Saeed</td>
-                    <td><span class="badge low">Low</span></td>
-                    <td><span class="badge resolved">Resolved</span></td>
+                    <td colspan="5">
+                        No tickets have been created yet.
+                    </td>
                 </tr>
+
+                {% endfor %}
+
             </tbody>
+
         </table>
+
     </div>
 
 </section>
