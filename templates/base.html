@@ -28,19 +28,42 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('create_ticket') }}">Create Ticket</a>
-            <a href="{{ url_for('all_tickets') }}">All Tickets</a>
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="{% if request.endpoint == 'dashboard' %}active{% endif %}"
+            >
+                Dashboard
+            </a>
+
+            <a
+                href="{{ url_for('create_ticket') }}"
+                class="{% if request.endpoint == 'create_ticket' %}active{% endif %}"
+            >
+                Create Ticket
+            </a>
+
+            <a
+                href="{{ url_for('all_tickets') }}"
+                class="{% if request.endpoint == 'all_tickets' %}active{% endif %}"
+            >
+                All Tickets
+            </a>
+
             <a href="#">Assets</a>
             <a href="#">Users</a>
             <a href="#">Reports</a>
             <a href="#">Settings</a>
+
+            <a href="{{ url_for('logout') }}">
+                Sign Out
+            </a>
         </nav>
 
         <div class="sidebar-footer">
-            <strong>Ali Almazrouei</strong>
-            <span>Administrator</span>
+            <strong>{{ session.get("full_name") }}</strong>
+            <span>{{ session.get("role") }}</span>
         </div>
+
     </aside>
 
     <main class="main-content">
