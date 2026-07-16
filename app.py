@@ -51,15 +51,12 @@ def dashboard():
             """
             SELECT
                 SUM(CASE WHEN status = 'Open' THEN 1 ELSE 0 END) AS open,
-                SUM(
-                    CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END
-                ) AS in_progress,
-                SUM(
-                    CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END
-                ) AS resolved,
-                SUM(
-                    CASE WHEN status = 'Closed' THEN 1 ELSE 0 END
-                ) AS closed
+                SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END)
+                    AS in_progress,
+                SUM(CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END)
+                    AS resolved,
+                SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END)
+                    AS closed
             FROM tickets
             """
         ).fetchone()
@@ -273,6 +270,32 @@ def update_ticket_status(ticket_id):
             WHERE id = ?
             """,
             (new_status, ticket_id),
+        )
+
+    return redirect(url_for("all_tickets"))
+
+
+@app.route("/tickets/<int:ticket_id>/delete", methods=["POST"])
+def delete_ticket(ticket_id):
+    with get_database_connection() as connection:
+        ticket = connection.execute(
+            """
+            SELECT id
+            FROM tickets
+            WHERE id = ?
+            """,
+            (ticket_id,),
+        ).fetchone()
+
+        if ticket is None:
+            return "Ticket not found.", 404
+
+        connection.execute(
+            """
+            DELETE FROM tickets
+            WHERE id = ?
+            """,
+            (ticket_id,),
         )
 
     return redirect(url_for("all_tickets"))
