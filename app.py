@@ -547,20 +547,135 @@ def assets_page():
             except sqlite3.IntegrityError:
                 error = "That asset tag already exists."
 
+    search = request.args.get("search", "").strip()
+    asset_type_filter = request.args.get("type", "").strip()
+    status_filter = request.args.get("status", "").strip()
+
+    sql = """
+        SELECT *
+        FROM assets
+        WHERE 1 = 1
+    """
+
+    values = []
+
+    if search:
+        sql += """
+            AND (
+                asset_tag LIKE ?
+                OR asset_name LIKE ?
+                OR serial_number LIKE ?
+                OR location LIKE ?
+                OR assigned_to LIKE ?
+            )
+        """
+
+        search_value = f"%{search}%"
+        values.extend([search_value] * 5)
+
+    if asset_type_filter:
+        sql += " AND asset_type = ?"
+        values.append(asset_type_filter)
+
+    if status_filter:
+        sql += " AND status = ?"
+        values.append(status_filter)
+
+    sql += " ORDER BY id DESC"
+
     with get_database_connection() as connection:
-        assets = connection.execute(
-            """
-            SELECT *
-            FROM assets
-            ORDER BY id DESC
-            """
-        ).fetchall()
+        assets = connection.execute(sql, values).fetchall()
 
     return render_template(
         "assets.html",
         assets=assets,
         error=error,
         success=success,
+        search=search,
+        selected_type=asset_type_filter,
+        selected_status=status_filter,
+    )
+
+
+@app.route(
+    "/assets/<int:asset_id>/edit",
+    methods=["GET", "POST"],
+)
+@role_required("Administrator", "Technician")
+def edit_asset(asset_id):
+    with get_database_connection() as connection:
+        asset = connection.execute(
+            """
+            SELECT *
+            FROM assets
+            WHERE id = ?
+            """,
+            (asset_id,),
+        ).fetchone()
+
+        if asset is None:
+            return "Asset not found.", 404
+
+        error = None
+
+        if request.method == "POST":
+            asset_tag = request.form.get("asset_tag", "").strip()
+            asset_name = request.form.get("asset_name", "").strip()
+            asset_type = request.form.get("asset_type", "").strip()
+            serial_number = request.form.get("serial_number", "").strip()
+            location = request.form.get("location", "").strip()
+            assigned_to = request.form.get("assigned_to", "").strip()
+            status = request.form.get("status", "").strip()
+
+            if not asset_tag or not asset_name or not location:
+                error = "Complete the required asset fields."
+
+            elif asset_type not in ASSET_TYPES:
+                error = "Select a valid asset type."
+
+            elif status not in ASSET_STATUSES:
+                error = "Select a valid asset status."
+
+            else:
+                try:
+                    connection.execute(
+                        """
+                        UPDATE assets
+                        SET asset_tag = ?,
+                            asset_name = ?,
+                            asset_type = ?,
+                            serial_number = ?,
+                            location = ?,
+                            assigned_to = ?,
+                            status = ?
+                        WHERE id = ?
+                        """,
+                        (
+                            asset_tag,
+                            asset_name,
+                            asset_type,
+                            serial_number,
+                            location,
+                            assigned_to,
+                            status,
+                            asset_id,
+                        ),
+                    )
+
+                    return redirect(
+                        url_for(
+                            "assets_page",
+                            success="Asset updated successfully.",
+                        )
+                    )
+
+                except sqlite3.IntegrityError:
+                    error = "That asset tag already exists."
+
+    return render_template(
+        "edit_asset.html",
+        asset=asset,
+        error=error,
     )
 
 

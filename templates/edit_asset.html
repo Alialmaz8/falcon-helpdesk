@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Asset | Falcon HelpDesk
+{% endblock %}
+
+{% block page_title %}
+Edit Asset
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/assets.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="form-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>{{ asset["asset_tag"] }}</h2>
+            <p>Update the equipment information.</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="asset-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="ticket-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="asset_tag">Asset Tag</label>
+                <input
+                    type="text"
+                    id="asset_tag"
+                    name="asset_tag"
+                    value="{{ asset['asset_tag'] }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="asset_name">Asset Name</label>
+                <input
+                    type="text"
+                    id="asset_name"
+                    name="asset_name"
+                    value="{{ asset['asset_name'] }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="asset_type">Asset Type</label>
+
+                <select id="asset_type" name="asset_type" required>
+
+                    {% for asset_type in [
+                        "Desktop",
+                        "Laptop",
+                        "Printer",
+                        "Network Device",
+                        "Mobile Device",
+                        "Other"
+                    ] %}
+                        <option
+                            value="{{ asset_type }}"
+                            {% if asset["asset_type"] == asset_type %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ asset_type }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="serial_number">Serial Number</label>
+                <input
+                    type="text"
+                    id="serial_number"
+                    name="serial_number"
+                    value="{{ asset['serial_number'] or '' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value="{{ asset['location'] }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="assigned_to">Assigned To</label>
+                <input
+                    type="text"
+                    id="assigned_to"
+                    name="assigned_to"
+                    value="{{ asset['assigned_to'] or '' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+
+                <select id="status" name="status" required>
+
+                    {% for status in [
+                        "Available",
+                        "Assigned",
+                        "Repair",
+                        "Retired"
+                    ] %}
+                        <option
+                            value="{{ status }}"
+                            {% if asset["status"] == status %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ status }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('assets_page') }}"
+                class="secondary-btn"
+            >
+                Cancel
+            </a>
+
+            <button type="submit" class="primary-btn">
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

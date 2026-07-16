@@ -44,7 +44,6 @@ Assets
 
             <div class="form-group">
                 <label for="asset_tag">Asset Tag</label>
-
                 <input
                     type="text"
                     id="asset_tag"
@@ -56,7 +55,6 @@ Assets
 
             <div class="form-group">
                 <label for="asset_name">Asset Name</label>
-
                 <input
                     type="text"
                     id="asset_name"
@@ -68,7 +66,6 @@ Assets
 
             <div class="form-group">
                 <label for="asset_type">Asset Type</label>
-
                 <select id="asset_type" name="asset_type" required>
                     <option value="">Select type</option>
                     <option value="Desktop">Desktop</option>
@@ -82,7 +79,6 @@ Assets
 
             <div class="form-group">
                 <label for="serial_number">Serial Number</label>
-
                 <input
                     type="text"
                     id="serial_number"
@@ -93,7 +89,6 @@ Assets
 
             <div class="form-group">
                 <label for="location">Location</label>
-
                 <input
                     type="text"
                     id="location"
@@ -105,7 +100,6 @@ Assets
 
             <div class="form-group">
                 <label for="assigned_to">Assigned To</label>
-
                 <input
                     type="text"
                     id="assigned_to"
@@ -116,7 +110,6 @@ Assets
 
             <div class="form-group">
                 <label for="status">Status</label>
-
                 <select id="status" name="status" required>
                     <option value="Available">Available</option>
                     <option value="Assigned">Assigned</option>
@@ -142,9 +135,70 @@ Assets
     <div class="panel-header">
         <div>
             <h2>Asset Inventory</h2>
-            <p>{{ assets|length }} registered assets.</p>
+            <p>{{ assets|length }} matching assets.</p>
         </div>
     </div>
+
+    <form method="GET" class="asset-filters">
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search tag, name, serial number or employee"
+        >
+
+        <select name="type">
+            <option value="">All types</option>
+
+            {% for asset_type in [
+                "Desktop",
+                "Laptop",
+                "Printer",
+                "Network Device",
+                "Mobile Device",
+                "Other"
+            ] %}
+                <option
+                    value="{{ asset_type }}"
+                    {% if selected_type == asset_type %}
+                        selected
+                    {% endif %}
+                >
+                    {{ asset_type }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="status">
+            <option value="">All statuses</option>
+
+            {% for status in [
+                "Available",
+                "Assigned",
+                "Repair",
+                "Retired"
+            ] %}
+                <option
+                    value="{{ status }}"
+                    {% if selected_status == status %}
+                        selected
+                    {% endif %}
+                >
+                    {{ status }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="small-btn">
+            Search
+        </button>
+
+        <a href="{{ url_for('assets_page') }}" class="clear-filter">
+            Clear
+        </a>
+
+    </form>
 
     <div class="table-wrapper">
 
@@ -159,10 +213,7 @@ Assets
                     <th>Location</th>
                     <th>Assigned To</th>
                     <th>Status</th>
-
-                    {% if session.get("role") == "Administrator" %}
-                        <th>Action</th>
-                    {% endif %}
+                    <th>Action</th>
                 </tr>
             </thead>
 
@@ -172,7 +223,15 @@ Assets
 
                 <tr>
                     <td>
-                        <strong>{{ asset["asset_tag"] }}</strong>
+                        <a
+                            href="{{ url_for(
+                                'edit_asset',
+                                asset_id=asset['id']
+                            ) }}"
+                            class="asset-link"
+                        >
+                            {{ asset["asset_tag"] }}
+                        </a>
                     </td>
 
                     <td>{{ asset["asset_name"] }}</td>
@@ -189,34 +248,48 @@ Assets
                         </span>
                     </td>
 
-                    {% if session.get("role") == "Administrator" %}
-                        <td>
-                            <form
-                                method="POST"
-                                action="{{ url_for(
-                                    'delete_asset',
+                    <td>
+                        <div class="asset-actions">
+
+                            <a
+                                href="{{ url_for(
+                                    'edit_asset',
                                     asset_id=asset['id']
                                 ) }}"
-                                onsubmit="return confirm(
-                                    'Delete this asset from the inventory?'
-                                );"
+                                class="asset-edit"
                             >
-                                <button type="submit" class="asset-delete">
-                                    Delete
-                                </button>
-                            </form>
-                        </td>
-                    {% endif %}
+                                Edit
+                            </a>
+
+                            {% if session.get("role") == "Administrator" %}
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'delete_asset',
+                                        asset_id=asset['id']
+                                    ) }}"
+                                    onsubmit="return confirm(
+                                        'Delete this asset from the inventory?'
+                                    );"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="asset-delete"
+                                    >
+                                        Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                        </div>
+                    </td>
                 </tr>
 
                 {% else %}
 
                 <tr>
-                    <td
-                        colspan="{% if session.get('role') == 'Administrator' %}8{% else %}7{% endif %}"
-                        class="empty-message"
-                    >
-                        No assets have been added yet.
+                    <td colspan="8" class="empty-message">
+                        No assets match your search.
                     </td>
                 </tr>
 
