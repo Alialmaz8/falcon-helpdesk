@@ -10,6 +10,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}"
     >
+
+    {% block extra_css %}
+    {% endblock %}
 </head>
 
 <body>
@@ -55,7 +58,13 @@
             </a>
 
             {% if session.get("role") in ["Administrator", "Technician"] %}
-                <a href="#">Assets</a>
+                <a
+                    href="{{ url_for('assets_page') }}"
+                    class="{% if request.endpoint == 'assets_page' %}active{% endif %}"
+                >
+                    Assets
+                </a>
+
                 <a href="#">Reports</a>
             {% endif %}
 

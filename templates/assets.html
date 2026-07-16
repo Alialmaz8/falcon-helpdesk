@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}
+Assets | Falcon HelpDesk
+{% endblock %}
+
+{% block page_title %}
+Assets
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/assets.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="form-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Add Asset</h2>
+            <p>Register company equipment in the inventory.</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="asset-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="success-message">
+            {{ success }}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="ticket-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="asset_tag">Asset Tag</label>
+
+                <input
+                    type="text"
+                    id="asset_tag"
+                    name="asset_tag"
+                    placeholder="Example: LAP-001"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="asset_name">Asset Name</label>
+
+                <input
+                    type="text"
+                    id="asset_name"
+                    name="asset_name"
+                    placeholder="Example: Dell Latitude 5440"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="asset_type">Asset Type</label>
+
+                <select id="asset_type" name="asset_type" required>
+                    <option value="">Select type</option>
+                    <option value="Desktop">Desktop</option>
+                    <option value="Laptop">Laptop</option>
+                    <option value="Printer">Printer</option>
+                    <option value="Network Device">Network Device</option>
+                    <option value="Mobile Device">Mobile Device</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="serial_number">Serial Number</label>
+
+                <input
+                    type="text"
+                    id="serial_number"
+                    name="serial_number"
+                    placeholder="Optional"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location</label>
+
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    placeholder="Example: Abu Dhabi Office"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="assigned_to">Assigned To</label>
+
+                <input
+                    type="text"
+                    id="assigned_to"
+                    name="assigned_to"
+                    placeholder="Employee name or leave blank"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+
+                <select id="status" name="status" required>
+                    <option value="Available">Available</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="Repair">Repair</option>
+                    <option value="Retired">Retired</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary-btn">
+                Add Asset
+            </button>
+        </div>
+
+    </form>
+
+</section>
+
+<section class="content-panel asset-list">
+
+    <div class="panel-header">
+        <div>
+            <h2>Asset Inventory</h2>
+            <p>{{ assets|length }} registered assets.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Asset Tag</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Serial Number</th>
+                    <th>Location</th>
+                    <th>Assigned To</th>
+                    <th>Status</th>
+
+                    {% if session.get("role") == "Administrator" %}
+                        <th>Action</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for asset in assets %}
+
+                <tr>
+                    <td>
+                        <strong>{{ asset["asset_tag"] }}</strong>
+                    </td>
+
+                    <td>{{ asset["asset_name"] }}</td>
+                    <td>{{ asset["asset_type"] }}</td>
+                    <td>{{ asset["serial_number"] or "—" }}</td>
+                    <td>{{ asset["location"] }}</td>
+                    <td>{{ asset["assigned_to"] or "Unassigned" }}</td>
+
+                    <td>
+                        <span
+                            class="asset-status {{ asset['status']|lower|replace(' ', '-') }}"
+                        >
+                            {{ asset["status"] }}
+                        </span>
+                    </td>
+
+                    {% if session.get("role") == "Administrator" %}
+                        <td>
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'delete_asset',
+                                    asset_id=asset['id']
+                                ) }}"
+                                onsubmit="return confirm(
+                                    'Delete this asset from the inventory?'
+                                );"
+                            >
+                                <button type="submit" class="asset-delete">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td
+                        colspan="{% if session.get('role') == 'Administrator' %}8{% else %}7{% endif %}"
+                        class="empty-message"
+                    >
+                        No assets have been added yet.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

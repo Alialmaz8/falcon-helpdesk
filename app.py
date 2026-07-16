@@ -37,6 +37,22 @@ ALLOWED_ROLES = {
     "User",
 }
 
+ASSET_TYPES = {
+    "Desktop",
+    "Laptop",
+    "Printer",
+    "Network Device",
+    "Mobile Device",
+    "Other",
+}
+
+ASSET_STATUSES = {
+    "Available",
+    "Assigned",
+    "Repair",
+    "Retired",
+}
+
 
 def get_database_connection():
     connection = sqlite3.connect(DATABASE_PATH)
@@ -72,6 +88,22 @@ def initialize_database():
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS assets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                asset_tag TEXT UNIQUE NOT NULL,
+                asset_name TEXT NOT NULL,
+                asset_type TEXT NOT NULL,
+                serial_number TEXT,
+                location TEXT NOT NULL,
+                assigned_to TEXT,
+                status TEXT NOT NULL DEFAULT 'Available',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -452,6 +484,104 @@ def delete_ticket(ticket_id):
         )
 
     return redirect(url_for("all_tickets"))
+
+
+@app.route("/assets", methods=["GET", "POST"])
+@role_required("Administrator", "Technician")
+def assets_page():
+    error = None
+    success = request.args.get("success")
+
+    if request.method == "POST":
+        asset_tag = request.form.get("asset_tag", "").strip()
+        asset_name = request.form.get("asset_name", "").strip()
+        asset_type = request.form.get("asset_type", "").strip()
+        serial_number = request.form.get("serial_number", "").strip()
+        location = request.form.get("location", "").strip()
+        assigned_to = request.form.get("assigned_to", "").strip()
+        status = request.form.get("status", "").strip()
+
+        if not asset_tag or not asset_name or not location:
+            error = "Complete the required asset fields."
+
+        elif asset_type not in ASSET_TYPES:
+            error = "Select a valid asset type."
+
+        elif status not in ASSET_STATUSES:
+            error = "Select a valid asset status."
+
+        else:
+            try:
+                with get_database_connection() as connection:
+                    connection.execute(
+                        """
+                        INSERT INTO assets (
+                            asset_tag,
+                            asset_name,
+                            asset_type,
+                            serial_number,
+                            location,
+                            assigned_to,
+                            status
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            asset_tag,
+                            asset_name,
+                            asset_type,
+                            serial_number,
+                            location,
+                            assigned_to,
+                            status,
+                        ),
+                    )
+
+                return redirect(
+                    url_for(
+                        "assets_page",
+                        success="Asset added successfully.",
+                    )
+                )
+
+            except sqlite3.IntegrityError:
+                error = "That asset tag already exists."
+
+    with get_database_connection() as connection:
+        assets = connection.execute(
+            """
+            SELECT *
+            FROM assets
+            ORDER BY id DESC
+            """
+        ).fetchall()
+
+    return render_template(
+        "assets.html",
+        assets=assets,
+        error=error,
+        success=success,
+    )
+
+
+@app.route("/assets/<int:asset_id>/delete", methods=["POST"])
+@role_required("Administrator")
+def delete_asset(asset_id):
+    with get_database_connection() as connection:
+        connection.execute(
+            """
+            DELETE FROM assets
+            WHERE id = ?
+            """,
+            (asset_id,),
+        )
+
+    return redirect(
+        url_for(
+            "assets_page",
+            success="Asset deleted.",
+        )
+    )
 
 
 @app.route("/users", methods=["GET", "POST"])

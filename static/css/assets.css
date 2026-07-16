@@ -1,0 +1,54 @@
+.asset-list {
+    margin-top: 24px;
+}
+
+.asset-error {
+    margin-bottom: 20px;
+    padding: 14px;
+    border-radius: 9px;
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.asset-status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.asset-status.available {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.asset-status.assigned {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.asset-status.repair {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.asset-status.retired {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.asset-delete {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 7px;
+    background: #dc2626;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+.asset-delete:hover {
+    background: #b91c1c;
+}
