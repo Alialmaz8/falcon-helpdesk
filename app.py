@@ -151,7 +151,25 @@ def update_ticket_status(ticket_id):
 
     return redirect(url_for("all_tickets"))
 
+@app.route("/tickets/<int:ticket_id>")
+def ticket_details(ticket_id):
+    with get_database_connection() as connection:
+        ticket = connection.execute(
+            """
+            SELECT *
+            FROM tickets
+            WHERE id = ?
+            """,
+            (ticket_id,),
+        ).fetchone()
 
+    if ticket is None:
+        return "Ticket not found.", 404
+
+    return render_template(
+        "ticket_details.html",
+        ticket=ticket,
+    )
 initialize_database()
 
 

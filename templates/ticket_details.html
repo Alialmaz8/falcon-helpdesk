@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+Ticket #{{ ticket["id"] }} | Falcon HelpDesk
+{% endblock %}
+
+{% block page_title %}
+Ticket #{{ ticket["id"] }}
+{% endblock %}
+
+{% block content %}
+
+<section class="content-panel">
+
+    <div class="ticket-details-header">
+        <div>
+            <h2>{{ ticket["subject"] }}</h2>
+            <p>Created on {{ ticket["created_at"] }}</p>
+        </div>
+
+        <a href="{{ url_for('all_tickets') }}" class="secondary-btn">
+            Back to Tickets
+        </a>
+    </div>
+
+    <div class="details-grid">
+
+        <div class="detail-item">
+            <span>Requester</span>
+            <strong>{{ ticket["requester"] }}</strong>
+        </div>
+
+        <div class="detail-item">
+            <span>Department</span>
+            <strong>{{ ticket["department"] }}</strong>
+        </div>
+
+        <div class="detail-item">
+            <span>Category</span>
+            <strong>{{ ticket["category"] }}</strong>
+        </div>
+
+        <div class="detail-item">
+            <span>Priority</span>
+            <strong>{{ ticket["priority"] }}</strong>
+        </div>
+
+        <div class="detail-item">
+            <span>Status</span>
+            <strong>{{ ticket["status"] }}</strong>
+        </div>
+
+    </div>
+
+    <div class="description-box">
+        <h3>Issue Description</h3>
+        <p>{{ ticket["description"] }}</p>
+    </div>
+
+</section>
+
+{% endblock %}

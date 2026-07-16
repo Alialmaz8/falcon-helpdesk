@@ -35,7 +35,14 @@
             <tbody>
                 {% for ticket in tickets %}
                 <tr>
-                    <td>#{{ ticket["id"] }}</td>
+                    <td>
+    <a
+        class="ticket-link"
+        href="{{ url_for('ticket_details', ticket_id=ticket['id']) }}"
+    >
+        #{{ ticket["id"] }}
+    </a>
+</td>
 
                     <td>
                         <strong>{{ ticket["subject"] }}</strong>
