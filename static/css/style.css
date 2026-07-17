@@ -524,3 +524,10 @@ td {
         flex-direction: column;
     }
 }
+.error-message {
+    margin-bottom: 20px;
+    padding: 14px;
+    border-radius: 9px;
+    background: #fee2e2;
+    color: #b91c1c;
+}

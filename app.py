@@ -14,8 +14,39 @@ BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "database" / "falcon_helpdesk.db"
 SECRET_KEY_PATH = BASE_DIR / ".secret_key"
 
-TICKET_STATUSES = ("Open", "In Progress", "Resolved", "Closed")
-USER_ROLES = ("Administrator", "Technician", "User")
+TICKET_STATUSES = (
+    "Open",
+    "In Progress",
+    "Resolved",
+    "Closed",
+)
+
+DEPARTMENTS = (
+    "IT",
+    "HR",
+    "Finance",
+    "Operations",
+)
+
+PRIORITIES = (
+    "Low",
+    "Medium",
+    "High",
+    "Critical",
+)
+
+TICKET_CATEGORIES = (
+    "Hardware",
+    "Software",
+    "Network",
+    "Account",
+)
+
+USER_ROLES = (
+    "Administrator",
+    "Technician",
+    "User",
+)
 
 ASSET_TYPES = (
     "Desktop",
@@ -45,6 +76,7 @@ def load_secret_key():
 
     new_key = secrets.token_hex(32)
     SECRET_KEY_PATH.write_text(new_key, encoding="utf-8")
+
     return new_key
 
 
@@ -54,6 +86,7 @@ app.secret_key = load_secret_key()
 def get_database_connection():
     connection = sqlite3.connect(DATABASE_PATH)
     connection.row_factory = sqlite3.Row
+
     return connection
 
 
@@ -161,12 +194,16 @@ def login():
 
         error = "The username or password is incorrect."
 
-    return render_template("login.html", error=error)
+    return render_template(
+        "login.html",
+        error=error,
+    )
 
 
 @app.route("/logout")
 def logout():
     session.clear()
+
     return redirect(url_for("login"))
 
 
@@ -219,44 +256,85 @@ def dashboard():
 @app.route("/tickets/new", methods=["GET", "POST"])
 @login_required
 def create_ticket():
+    error = None
     message = None
 
-    if request.method == "POST":
-        requester = request.form["requester"].strip()
-        department = request.form["department"]
-        priority = request.form["priority"]
-        category = request.form["category"]
-        subject = request.form["subject"].strip()
-        description = request.form["description"].strip()
+    form_data = {
+        "department": "",
+        "priority": "",
+        "category": "",
+        "subject": "",
+        "description": "",
+    }
 
-        with get_database_connection() as connection:
-            connection.execute(
-                """
-                INSERT INTO tickets (
-                    requester,
-                    department,
-                    priority,
-                    category,
-                    subject,
-                    description
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    requester,
-                    department,
-                    priority,
-                    category,
-                    subject,
-                    description,
-                ),
-            )
-
+    if request.args.get("saved") == "1":
         message = "Ticket created and saved successfully."
+
+    if request.method == "POST":
+        form_data = {
+            "department": request.form.get("department", "").strip(),
+            "priority": request.form.get("priority", "").strip(),
+            "category": request.form.get("category", "").strip(),
+            "subject": request.form.get("subject", "").strip(),
+            "description": request.form.get("description", "").strip(),
+        }
+
+        requester = session.get("full_name", "").strip()
+
+        if not requester:
+            error = "Your account name could not be found."
+
+        elif form_data["department"] not in DEPARTMENTS:
+            error = "Select a valid department."
+
+        elif form_data["priority"] not in PRIORITIES:
+            error = "Select a valid priority."
+
+        elif form_data["category"] not in TICKET_CATEGORIES:
+            error = "Select a valid category."
+
+        elif len(form_data["subject"]) < 5:
+            error = "The subject must contain at least 5 characters."
+
+        elif len(form_data["description"]) < 10:
+            error = "The description must contain at least 10 characters."
+
+        else:
+            with get_database_connection() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO tickets (
+                        requester,
+                        department,
+                        priority,
+                        category,
+                        subject,
+                        description
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        requester,
+                        form_data["department"],
+                        form_data["priority"],
+                        form_data["category"],
+                        form_data["subject"],
+                        form_data["description"],
+                    ),
+                )
+
+            return redirect(
+                url_for(
+                    "create_ticket",
+                    saved="1",
+                )
+            )
 
     return render_template(
         "create_ticket.html",
+        error=error,
         message=message,
+        form_data=form_data,
     )
 
 
@@ -295,7 +373,10 @@ def all_tickets():
     sql += " ORDER BY id DESC"
 
     with get_database_connection() as connection:
-        tickets = connection.execute(sql, values).fetchall()
+        tickets = connection.execute(
+            sql,
+            values,
+        ).fetchall()
 
     return render_template(
         "tickets.html",
@@ -340,16 +421,34 @@ def edit_ticket(ticket_id):
             return "Ticket not found.", 404
 
         if request.method == "POST":
-            requester = request.form["requester"].strip()
-            department = request.form["department"]
-            priority = request.form["priority"]
-            category = request.form["category"]
-            subject = request.form["subject"].strip()
-            description = request.form["description"].strip()
-            status = request.form["status"]
+            requester = request.form.get("requester", "").strip()
+            department = request.form.get("department", "").strip()
+            priority = request.form.get("priority", "").strip()
+            category = request.form.get("category", "").strip()
+            subject = request.form.get("subject", "").strip()
+            description = request.form.get("description", "").strip()
+            status = request.form.get("status", "").strip()
+
+            if not requester:
+                return "Requester name is required.", 400
+
+            if department not in DEPARTMENTS:
+                return "Invalid department.", 400
+
+            if priority not in PRIORITIES:
+                return "Invalid priority.", 400
+
+            if category not in TICKET_CATEGORIES:
+                return "Invalid ticket category.", 400
 
             if status not in TICKET_STATUSES:
                 return "Invalid ticket status.", 400
+
+            if len(subject) < 5:
+                return "The subject must contain at least 5 characters.", 400
+
+            if len(description) < 10:
+                return "The description must contain at least 10 characters.", 400
 
             connection.execute(
                 """
@@ -400,13 +499,24 @@ def update_ticket_status(ticket_id):
         return "Invalid ticket status.", 400
 
     with get_database_connection() as connection:
+        ticket = connection.execute(
+            "SELECT id FROM tickets WHERE id = ?",
+            (ticket_id,),
+        ).fetchone()
+
+        if ticket is None:
+            return "Ticket not found.", 404
+
         connection.execute(
             """
             UPDATE tickets
             SET status = ?
             WHERE id = ?
             """,
-            (new_status, ticket_id),
+            (
+                new_status,
+                ticket_id,
+            ),
         )
 
     return redirect(url_for("all_tickets"))
@@ -528,7 +638,10 @@ def assets_page():
     sql += " ORDER BY id DESC"
 
     with get_database_connection() as connection:
-        assets = connection.execute(sql, values).fetchall()
+        assets = connection.execute(
+            sql,
+            values,
+        ).fetchall()
 
     return render_template(
         "assets.html",
@@ -626,6 +739,14 @@ def edit_asset(asset_id):
 @role_required("Administrator")
 def delete_asset(asset_id):
     with get_database_connection() as connection:
+        asset = connection.execute(
+            "SELECT id FROM assets WHERE id = ?",
+            (asset_id,),
+        ).fetchone()
+
+        if asset is None:
+            return "Asset not found.", 404
+
         connection.execute(
             "DELETE FROM assets WHERE id = ?",
             (asset_id,),
@@ -846,6 +967,14 @@ def delete_user(user_id):
         )
 
     with get_database_connection() as connection:
+        user = connection.execute(
+            "SELECT id FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+        if user is None:
+            return "User not found.", 404
+
         connection.execute(
             "DELETE FROM users WHERE id = ?",
             (user_id,),

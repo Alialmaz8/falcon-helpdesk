@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Create Ticket | Falcon HelpDesk{% endblock %}
+{% block title %}
+Create Ticket | Falcon HelpDesk
+{% endblock %}
 
-{% block page_title %}Create Ticket{% endblock %}
+{% block page_title %}
+Create Ticket
+{% endblock %}
 
 {% block content %}
 
@@ -11,9 +15,15 @@
     <div class="panel-header">
         <div>
             <h2>Submit a Support Request</h2>
-            <p>Provide the issue details so the support team can assist you.</p>
+            <p>Enter the issue details below.</p>
         </div>
     </div>
+
+    {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+    {% endif %}
 
     {% if message %}
         <div class="success-message">
@@ -27,45 +37,120 @@
 
             <div class="form-group">
                 <label for="requester">Requester Name</label>
+
                 <input
                     type="text"
                     id="requester"
-                    name="requester"
-                    placeholder="Enter full name"
-                    required
+                    value="{{ session.get('full_name', '') }}"
+                    readonly
                 >
             </div>
 
             <div class="form-group">
                 <label for="department">Department</label>
+
                 <select id="department" name="department" required>
                     <option value="">Select department</option>
-                    <option value="IT">Information Technology</option>
-                    <option value="HR">Human Resources</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Operations">Operations</option>
+
+                    <option
+                        value="IT"
+                        {% if form_data["department"] == "IT" %}selected{% endif %}
+                    >
+                        Information Technology
+                    </option>
+
+                    <option
+                        value="HR"
+                        {% if form_data["department"] == "HR" %}selected{% endif %}
+                    >
+                        Human Resources
+                    </option>
+
+                    <option
+                        value="Finance"
+                        {% if form_data["department"] == "Finance" %}selected{% endif %}
+                    >
+                        Finance
+                    </option>
+
+                    <option
+                        value="Operations"
+                        {% if form_data["department"] == "Operations" %}selected{% endif %}
+                    >
+                        Operations
+                    </option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="priority">Priority</label>
+
                 <select id="priority" name="priority" required>
                     <option value="">Select priority</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
+
+                    <option
+                        value="Low"
+                        {% if form_data["priority"] == "Low" %}selected{% endif %}
+                    >
+                        Low
+                    </option>
+
+                    <option
+                        value="Medium"
+                        {% if form_data["priority"] == "Medium" %}selected{% endif %}
+                    >
+                        Medium
+                    </option>
+
+                    <option
+                        value="High"
+                        {% if form_data["priority"] == "High" %}selected{% endif %}
+                    >
+                        High
+                    </option>
+
+                    <option
+                        value="Critical"
+                        {% if form_data["priority"] == "Critical" %}selected{% endif %}
+                    >
+                        Critical
+                    </option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="category">Category</label>
+
                 <select id="category" name="category" required>
                     <option value="">Select category</option>
-                    <option value="Hardware">Hardware</option>
-                    <option value="Software">Software</option>
-                    <option value="Network">Network</option>
-                    <option value="Account">Account Access</option>
+
+                    <option
+                        value="Hardware"
+                        {% if form_data["category"] == "Hardware" %}selected{% endif %}
+                    >
+                        Hardware
+                    </option>
+
+                    <option
+                        value="Software"
+                        {% if form_data["category"] == "Software" %}selected{% endif %}
+                    >
+                        Software
+                    </option>
+
+                    <option
+                        value="Network"
+                        {% if form_data["category"] == "Network" %}selected{% endif %}
+                    >
+                        Network
+                    </option>
+
+                    <option
+                        value="Account"
+                        {% if form_data["category"] == "Account" %}selected{% endif %}
+                    >
+                        Account Access
+                    </option>
                 </select>
             </div>
 
@@ -73,24 +158,27 @@
 
         <div class="form-group">
             <label for="subject">Subject</label>
+
             <input
                 type="text"
                 id="subject"
                 name="subject"
-                placeholder="Brief description of the issue"
+                value="{{ form_data['subject'] }}"
+                placeholder="Brief description of the problem"
                 required
             >
         </div>
 
         <div class="form-group">
             <label for="description">Issue Description</label>
+
             <textarea
                 id="description"
                 name="description"
                 rows="7"
-                placeholder="Explain the issue and any troubleshooting already attempted"
+                placeholder="Explain the problem and anything you already tried"
                 required
-            ></textarea>
+            >{{ form_data["description"] }}</textarea>
         </div>
 
         <div class="form-actions">
