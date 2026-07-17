@@ -8,37 +8,40 @@
 
 ### IT Support and Ticket Management System
 
-Built by an Emirati Computer Science student from Abu Dhabi studying in California.
+A Computer Science student project built with Python, Flask, and SQLite.
 
 </div>
 
 ---
 
-## About the Project
+## About
 
-Falcon HelpDesk is a web-based IT support and ticket management system developed using **Python**, **Flask**, and **SQLite**.
+Falcon HelpDesk is a small web application for managing IT support tickets.
 
-The project was created to practice full-stack web development concepts, including user authentication, database management, CRUD operations, role-based access, and responsive user interface design.
+I built this project to practice Python web development and learn how a Flask application connects to a database.
+
+The system includes user accounts, support tickets, asset inventory, and basic reports.
+
+This is a learning project and is not intended to be used as a production help desk system.
 
 ---
 
-## Features
+## Main Features
 
-- Secure login system
+- User login and logout
 - Password hashing
-- Administrator, Technician, and User accounts
+- Administrator, Technician, and User roles
 - Create support tickets
 - View ticket details
-- Edit tickets
-- Delete tickets
-- Update ticket status
+- Edit and delete tickets
+- Change ticket status
 - Search and filter tickets
-- Dashboard with live statistics
-- Asset inventory management
-- Search and edit assets
-- User management
-- Reports dashboard
-- Responsive interface
+- Ticket form validation
+- Dashboard ticket statistics
+- Asset inventory
+- Add, edit, search, and delete assets
+- User account management
+- Basic reports
 
 ---
 
@@ -46,130 +49,154 @@ The project was created to practice full-stack web development concepts, includi
 
 ### Administrator
 
-- Full access to the system
-- Manage users
+The Administrator has access to all parts of the application.
+
+An Administrator can:
+
 - Manage tickets
 - Manage assets
+- Create user accounts
+- Delete user accounts
 - View reports
 
 ### Technician
 
-- View assigned tickets
-- Update ticket status
+A Technician can:
+
+- View tickets
+- Edit tickets
+- Change ticket status
 - Manage assets
 - View reports
 
 ### User
 
+A User can:
+
+- Sign in
+- View the dashboard
 - Create tickets
 - View tickets
-- View dashboard
 
 ---
 
-## Technologies Used
+## Technologies
 
 - Python
 - Flask
 - SQLite
-- HTML5
-- CSS3
-- Jinja2
+- HTML
+- CSS
+- Jinja
 - Werkzeug
 - Git
 - GitHub
 
 ---
 
-# Screenshots
+## Screenshots
 
-## Login Page
+### Login
 
-![Login](screenshots/login.png)
+![Login page](screenshots/login.png)
 
----
-
-## Dashboard
+### Dashboard
 
 ![Dashboard](screenshots/dashboard.png)
 
----
-
-## Tickets
+### Tickets
 
 ![Tickets](screenshots/tickets.png)
 
----
-
-## Assets
+### Assets
 
 ![Assets](screenshots/assets.png)
 
----
-
-## Reports
+### Reports
 
 ![Reports](screenshots/reports.png)
 
 ---
 
-# Installation
+## How to Run the Project
 
-Clone the repository.
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Alialmaz8/falcon-helpdesk.git
 cd falcon-helpdesk
 ```
 
-Create a virtual environment.
+### 2. Create a virtual environment
 
 ```bash
 python -m venv .venv
 ```
 
-Activate it.
+### 3. Activate the virtual environment
 
-### Windows
+On Windows PowerShell:
 
 ```powershell
-.\.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 ```
 
-Install the required packages.
+### 4. Install the required packages
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the application.
+### 5. Create an administrator account
+
+```bash
+python create_admin.py
+```
+
+Enter your name, username, and password when the program asks for them.
+
+The account information is stored locally in the SQLite database. The password is stored as a hash.
+
+### 6. Start the application
+
+```bash
+python app.py
+```
+
+You can also start it using Flask debug mode:
 
 ```bash
 flask --app app run --debug
 ```
 
-Open your browser and visit:
+### 7. Open the application
 
-```
+Open this address in your browser:
+
+```text
 http://127.0.0.1:5000
 ```
 
 ---
 
-# Project Structure
+## Project Structure
 
-```
+```text
 falcon-helpdesk
 │
 ├── app.py
+├── create_admin.py
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 │
 ├── database
 │   └── falcon_helpdesk.db
+│       Generated locally and not uploaded to GitHub
 │
 ├── screenshots
+│   ├── uae_flag.png
+│   ├── abudhabi_flag.png
 │   ├── login.png
 │   ├── dashboard.png
 │   ├── tickets.png
@@ -177,14 +204,16 @@ falcon-helpdesk
 │   └── reports.png
 │
 ├── static
-│   ├── css
-│   ├── images
-│   └── js
+│   └── css
+│       ├── style.css
+│       ├── login.css
+│       ├── assets.css
+│       └── reports.css
 │
 └── templates
     ├── base.html
-    ├── dashboard.html
     ├── login.html
+    ├── dashboard.html
     ├── create_ticket.html
     ├── tickets.html
     ├── ticket_details.html
@@ -192,58 +221,94 @@ falcon-helpdesk
     ├── assets.html
     ├── edit_asset.html
     ├── users.html
-    ├── reports.html
-    └── settings.html
+    └── reports.html
 ```
 
----
-
-# What I Learned
-
-While building this project I practiced:
-
-- Flask routing
-- SQLite database design
-- SQL queries
-- CRUD operations
-- User authentication
-- Password hashing
-- Session management
-- Jinja templates
-- HTML forms
-- CSS layout and responsive design
-- Git and GitHub workflow
+The `.secret_key` file and SQLite database are created locally and are excluded from GitHub.
 
 ---
 
-# Future Improvements
+## Database Tables
 
-Some features that could be added in future versions include:
+The application uses three main database tables.
 
+### Users
+
+Stores:
+
+- Full name
+- Username
+- Hashed password
+- User role
+
+### Tickets
+
+Stores:
+
+- Requester name
+- Department
+- Priority
+- Category
+- Subject
+- Description
+- Status
+- Creation date
+
+### Assets
+
+Stores:
+
+- Asset tag
+- Asset name
+- Asset type
+- Serial number
+- Location
+- Assigned employee
+- Asset status
+
+---
+
+## What I Learned
+
+While working on this project, I practiced:
+
+- Creating routes with Flask
+- Using HTML forms
+- Reading form information in Python
+- Validating submitted information
+- Creating and querying SQLite tables
+- Using parameterized SQL queries
+- Creating login sessions
+- Hashing passwords
+- Adding role-based permissions
+- Using Jinja templates
+- Creating reusable page layouts
+- Styling pages with CSS
+- Using Git commits and GitHub
+
+---
+
+## Possible Future Improvements
+
+Some improvements I may add later are:
+
+- Assigning tickets to specific technicians
+- Allowing users to view only their own tickets
+- Ticket comments
+- File attachments
+- Password changes
 - Email notifications
-- File attachments for tickets
-- Charts and graphs in reports
-- Asset maintenance history
-- Dark mode
-- REST API
-- Password reset by email
+- Report charts
+- Automated tests
 
 ---
 
-# Author
+## Author
 
 **Ali Mansoor Almazrouei**
 
-🇦🇪 Abu Dhabi, United Arab Emirates
+Computer Science Student  
+California State University, San Bernardino  
 
-Computer Science Student
 
-California State University, San Bernardino
-
-GitHub:
-https://github.com/Alialmaz8
-
----
-
-## License
-
+GitHub: `Alialmaz8`
